@@ -76,7 +76,7 @@ export function CartProvider({ children }) {
         return;
       }
 
-      toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
+      // toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
 
       fetchCart();
     } catch (err) {
