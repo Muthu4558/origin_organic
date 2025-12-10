@@ -12,7 +12,7 @@ import {
   FaPhoneAlt,
   FaEnvelope,
 } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLoading } from "../context/LoadingContext";
 
@@ -87,7 +87,6 @@ const Profile = () => {
   return (
     <>
       <Navbar />
-      <ToastContainer />
 
       <div className="min-h-screen py-16 px-4 mt-14">
         <div className="max-w-4xl mx-auto">

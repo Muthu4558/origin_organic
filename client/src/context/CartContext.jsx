@@ -14,9 +14,9 @@ export function CartProvider({ children }) {
   const { loading, startLoading, stopLoading } = useLoading();
   const navigate = useNavigate();
 
-  function handleAuthError(error, showAlert = false) {
-    if (error.response?.status === 401) {
-      if (showAlert) toast.error("Please log in to add products.", { autoClose: 1500 });
+  function handleAuthError(status, showAlert = false) {
+    if (status === 401) {
+      if (showAlert) toast.error("Please log in to add products.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
       navigate("/login");
     }
   }
@@ -29,13 +29,15 @@ export function CartProvider({ children }) {
       });
       if (res.status === 401) {
         setCartItems([]);
+        stopLoading();
         return;
       }
+      if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setCartItems(data.items || []);
     } catch (err) {
       setCartItems([]);
-      toast.error("Failed to fetch cart items.", { autoClose: 1500 });
+      toast.error("Failed to fetch cart items.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
     } finally {
       stopLoading();
     }
@@ -51,17 +53,29 @@ export function CartProvider({ children }) {
       });
 
       if (res.status === 401) {
-        handleAuthError({ response: { status: 401 } }, true);
+        handleAuthError(401, true);
         return;
       }
 
-      // show toast with explicit options (ensures the autoClose behaviour)
+      if (!res.ok) {
+        // read server message if provided
+        let errMsg = "Failed to add to cart.";
+        try {
+          const errData = await res.json();
+          if (errData?.message) errMsg = errData.message;
+        } catch {}
+        toast.error(errMsg, { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
+        return;
+      }
+
+      // success: explicitly set options so they don't get paused
       toast.success(`${product.name} added to cart!`, { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
 
-      // update cart
+      // refresh cart state after add completes — await if server returns updated cart
+      // if server returns updated cart payload, you could use it instead of calling fetchCart
       fetchCart();
-    } catch {
-      toast.error("Failed to add to cart.", { autoClose: 1500 });
+    } catch (err) {
+      toast.error("Failed to add to cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
     }
   };
 
@@ -72,15 +86,15 @@ export function CartProvider({ children }) {
         credentials: "include",
       });
       if (res.status === 401) {
-        handleAuthError({ response: { status: 401 } });
+        handleAuthError(401);
         return;
       }
+      if (!res.ok) throw new Error("Delete failed");
 
-      // toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
-
+      toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
       fetchCart();
     } catch (err) {
-      toast.error("Failed to remove item.", { autoClose: 1500 });
+      toast.error("Failed to remove item.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
     }
   };
 
@@ -94,15 +108,15 @@ export function CartProvider({ children }) {
         body: JSON.stringify({ productId, quantity }),
       });
       if (res.status === 401) {
-        handleAuthError({ response: { status: 401 } });
+        handleAuthError(401);
         return;
       }
+      if (!res.ok) throw new Error("Update failed");
 
       toast.success("Cart updated successfully.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
-
       fetchCart();
     } catch (err) {
-      toast.error("Failed to update cart.", { autoClose: 1500 });
+      toast.error("Failed to update cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
     }
   };
 
@@ -113,15 +127,15 @@ export function CartProvider({ children }) {
         credentials: "include",
       });
       if (res.status === 401) {
-        handleAuthError({ response: { status: 401 } });
+        handleAuthError(401);
         return;
       }
+      if (!res.ok) throw new Error("Clear failed");
 
       toast.info("Cart cleared.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
-
       fetchCart();
     } catch (err) {
-      toast.error("Failed to clear cart.", { autoClose: 1500 });
+      toast.error("Failed to clear cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
     }
   };
 
@@ -132,15 +146,17 @@ export function CartProvider({ children }) {
         credentials: "include",
       });
       if (res.status === 401) {
-        handleAuthError({ response: { status: 401 } });
+        handleAuthError(401);
         return;
       }
+      if (!res.ok) throw new Error("Checkout failed");
 
       toast.success("Checkout successful!", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
-      navigate("/thankyou");
       fetchCart();
+      // navigate after doing the toast + state updates
+      navigate("/thankyou");
     } catch (err) {
-      toast.error("Checkout failed.", { autoClose: 1500 });
+      toast.error("Checkout failed.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
     }
   };
 

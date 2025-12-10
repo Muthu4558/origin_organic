@@ -16,7 +16,7 @@ import {
   FaCloud,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
@@ -199,7 +199,6 @@ const Admin = () => {
   return (
     <>
       <Navbar />
-      <ToastContainer />
       <div className="min-h-screen py-33 px-4">
         <div className="max-w-7xl mx-auto">
 

@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { FaTrash, FaShoppingCart, FaMinus, FaPlus } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { useCart } from "../context/CartContext";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
@@ -121,7 +121,7 @@ const Cart = () => {
   return (
     <>
       <Navbar />
-      <ToastContainer position="top-right" />
+      {/* <ToastContainer position="top-right" /> */}
 
       <ConfirmDeleteModal
         open={confirmOpen}
