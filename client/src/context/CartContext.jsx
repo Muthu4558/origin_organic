@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useLoading } from "./LoadingContext";
 
 const CartContext = createContext();
 
@@ -11,18 +11,18 @@ export function useCart() {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, startLoading, stopLoading } = useLoading();
   const navigate = useNavigate();
 
   function handleAuthError(error, showAlert = false) {
     if (error.response?.status === 401) {
-      if (showAlert) toast.error("Please log in to add products.");
+      if (showAlert) toast.error("Please log in to add products.", { autoClose: 1500 });
       navigate("/login");
     }
   }
 
   const fetchCart = async () => {
-    setLoading(true);
+    startLoading();
     try {
       const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart`, {
         credentials: "include",
@@ -35,9 +35,9 @@ export function CartProvider({ children }) {
       setCartItems(data.items || []);
     } catch (err) {
       setCartItems([]);
-      toast.error("Failed to fetch cart items.");
+      toast.error("Failed to fetch cart items.", { autoClose: 1500 });
     } finally {
-      setLoading(false);
+      stopLoading();
     }
   };
 
@@ -55,14 +55,13 @@ export function CartProvider({ children }) {
         return;
       }
 
-      // Show toast immediately after the response
-      toast.success(`${product.name} added to cart!`);
+      // show toast with explicit options (ensures the autoClose behaviour)
+      toast.success(`${product.name} added to cart!`, { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
 
-      // Refresh cart in background
+      // update cart
       fetchCart();
-
     } catch {
-      toast.error("Failed to add to cart.");
+      toast.error("Failed to add to cart.", { autoClose: 1500 });
     }
   };
 
@@ -77,12 +76,11 @@ export function CartProvider({ children }) {
         return;
       }
 
-      toast.info("Item removed from cart.");
+      toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
 
       fetchCart();
-
     } catch (err) {
-      toast.error("Failed to remove item.");
+      toast.error("Failed to remove item.", { autoClose: 1500 });
     }
   };
 
@@ -100,12 +98,11 @@ export function CartProvider({ children }) {
         return;
       }
 
-      toast.success("Cart updated successfully.");
+      toast.success("Cart updated successfully.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
 
       fetchCart();
-
     } catch (err) {
-      toast.error("Failed to update cart.");
+      toast.error("Failed to update cart.", { autoClose: 1500 });
     }
   };
 
@@ -120,12 +117,11 @@ export function CartProvider({ children }) {
         return;
       }
 
-      toast.info("Cart cleared.");
+      toast.info("Cart cleared.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
 
       fetchCart();
-
     } catch (err) {
-      toast.error("Failed to clear cart.");
+      toast.error("Failed to clear cart.", { autoClose: 1500 });
     }
   };
 
@@ -140,12 +136,11 @@ export function CartProvider({ children }) {
         return;
       }
 
-      toast.success("Checkout successful!");
+      toast.success("Checkout successful!", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
       navigate("/thankyou");
       fetchCart();
-
     } catch (err) {
-      toast.error("Checkout failed.");
+      toast.error("Checkout failed.", { autoClose: 1500 });
     }
   };
 
