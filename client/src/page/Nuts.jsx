@@ -1,5 +1,6 @@
 // src/pages/Nuts.jsx
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
@@ -12,11 +13,19 @@ import {
   FiRefreshCw,
   FiX,
 } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
 const BRAND_DARK = "#3e772f";
 
 const Nuts = () => {
+  const location = useLocation();
+
+  // ensure page starts at top whenever this component is mounted / route changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // use (0,0) for instant jump
+  }, [location.pathname]);
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -25,12 +34,13 @@ const Nuts = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [offerOnly, setOfferOnly] = useState(false);
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { loading, startLoading, stopLoading } = useLoading();
+  
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
+    startLoading();
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Nuts`)
       .then((res) => {
@@ -42,7 +52,7 @@ const Nuts = () => {
         setProducts([]);
         setFilteredProducts([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => stopLoading());
   }, []);
 
   useEffect(() => {

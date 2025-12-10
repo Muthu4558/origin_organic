@@ -1,5 +1,6 @@
-// src/pages/About.jsx
-import React from "react";
+// src/components/About.jsx
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { motion } from "framer-motion";
@@ -24,8 +25,18 @@ import {
   FaRegSmile,
   FaBrain,
 } from "react-icons/fa";
+import { useLoading } from "../context/LoadingContext";
 
 export default function About() {
+  const location = useLocation();
+  const { loading, startLoading, stopLoading } = useLoading();
+
+  useEffect(() => {
+    startLoading();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    stopLoading();
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen flex flex-col text-gray-900">
       <Navbar />

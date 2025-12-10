@@ -1,15 +1,25 @@
-// Responsive Updated AllProduct.jsx
+// src/pages/AllProduct.jsx
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 import { motion } from "framer-motion";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
 
 const AllProduct = () => {
+  const location = useLocation();
+
+  // ensure page starts at top whenever this component is mounted / route changes
+  useEffect(() => {
+    // instant jump to top; change behavior to 'smooth' if you prefer smooth scrolling
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
+
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
 
@@ -21,10 +31,10 @@ const AllProduct = () => {
   const [featuredOnly, setFeaturedOnly] = useState(false);
 
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, setLoading, startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
-    setLoading(true);
+    startLoading();
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products`)
       .then((res) => {
@@ -39,7 +49,7 @@ const AllProduct = () => {
         setProducts([]);
         setFiltered([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => stopLoading());
   }, []);
 
   useEffect(() => {

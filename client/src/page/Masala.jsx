@@ -1,16 +1,26 @@
 // src/pages/Masala.jsx (Fully Responsive Version)
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { FiSearch, FiFilter, FiChevronDown, FiRefreshCw } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
 const BRAND_DARK = "#3e772f";
 
 const Masala = () => {
+  const location = useLocation();
+
+  // ensure page starts at top whenever this component is mounted / route changes
+  useEffect(() => {
+    // instant jump to top; change behavior to 'smooth' if you prefer smooth scrolling
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -19,11 +29,11 @@ const Masala = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [offerOnly, setOfferOnly] = useState(false);
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { loading, setLoading, startLoading, stopLoading } = useLoading();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
+    startLoading();
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Masala Items`)
       .then((res) => {
@@ -34,7 +44,7 @@ const Masala = () => {
         setProducts([]);
         setFilteredProducts([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => stopLoading());
   }, []);
 
   useEffect(() => {

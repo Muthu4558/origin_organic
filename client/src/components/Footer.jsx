@@ -5,7 +5,7 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 import { FiMail } from "react-icons/fi";
-import Logo from "../assets/logo.png"; // update path if needed
+import Logo from "../assets/logo.png";
 
 const Footer = () => {
   return (
@@ -35,7 +35,7 @@ const Footer = () => {
               <li><a href="/products/oils" className="hover:text-[#57b957] transition">Oils</a></li>
               <li><a href="/products/masala" className="hover:text-[#57b957] transition">Masala & Spices</a></li>
               <li><a href="/products/nuts" className="hover:text-[#57b957] transition">Nuts & Dry Fruits</a></li>
-              <li><a href="/products/milk" className="hover:text-[#57b957] transition">Ghee</a></li>
+              <li><a href="/products/milk" className="hover:text-[#57b957] transition">Milk Products</a></li>
               <li><a href="/products/all-products" className="hover:text-[#57b957] transition">All Products</a></li>
             </ul>
           </div>
@@ -61,21 +61,21 @@ const Footer = () => {
             <p className="text-gray-400 mb-2 flex items-center gap-2">
               <FaGlobe className="text-[#57b957]" />
               <a
-                href="https://www.originorganic.com"
+                href="https://www.originorganic.in"
                 className="hover:text-[#57b957] transition"
                 target="_blank"
               >
-                www.originorganic.com
+                www.originorganic.in
               </a>
             </p>
 
             <p className="text-gray-400 mb-4 flex items-center gap-2">
               <FiMail className="text-[#57b957]" />
               <a
-                href="mailto:info@originorganic.com"
+                href="mailto:originorganic1@gmail.com"
                 className="hover:text-[#57b957] transition"
               >
-                info@originorganic.com
+                originorganic1@gmail.com
               </a>
             </p>
 

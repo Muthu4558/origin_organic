@@ -20,6 +20,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
 
@@ -43,6 +44,7 @@ const Admin = () => {
   const [editingProductId, setEditingProductId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const { loading, startLoading, stopLoading } = useLoading();
 
   // toolbar state
   const [q, setQ] = useState("");
@@ -50,7 +52,9 @@ const Admin = () => {
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
   useEffect(() => {
+    startLoading();
     fetchProducts();
+    stopLoading();
   }, []);
 
   const fetchProducts = async () => {

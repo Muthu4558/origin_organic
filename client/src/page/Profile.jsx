@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957"; // updated to your requested color
 
@@ -22,6 +23,7 @@ const Profile = () => {
   const [profile, setProfile] = useState({ name: "", number: "", email: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", number: "", email: "" });
+  const { loading, startLoading, stopLoading } = useLoading();
 
   const fetchProfile = async () => {
     try {
@@ -37,8 +39,10 @@ const Profile = () => {
   };
 
   useEffect(() => {
+    startLoading();
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    stopLoading();
   }, []);
 
   const handleLogout = async () => {
@@ -173,7 +177,7 @@ const Profile = () => {
 
       {/* Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsModalOpen(false)} />
 
           <div className="relative w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-100 p-6 z-10">

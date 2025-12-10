@@ -1,5 +1,5 @@
 // src/pages/Cart.jsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { FaTrash, FaShoppingCart, FaMinus, FaPlus } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { useCart } from "../context/CartContext";
@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
+import { useLocation } from "react-router-dom";
 
 const BRAND = "#57b957";
 
@@ -60,11 +61,24 @@ const EmptyState = () => (
 );
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, checkoutCart } = useCart();
+  const location = useLocation();
+  const { cartItems, removeFromCart, updateQuantity, checkoutCart, fetchCart } = useCart();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmProductId, setConfirmProductId] = useState(null);
   const [confirmProductName, setConfirmProductName] = useState("");
+
+  // Ensure page starts at top on mount / route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // change to instant jump if you prefer: window.scrollTo(0,0)
+  }, [location.pathname]);
+
+  // Refresh cart when this page mounts or when route changes.
+  // This ensures data is fetched after redirect from login.
+  useEffect(() => {
+    if (fetchCart) fetchCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const total = useMemo(
     () =>

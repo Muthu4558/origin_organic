@@ -1,4 +1,4 @@
-// HeroExact.jsx
+// src/components/Hero.jsx
 import React from "react";
 import { motion } from "framer-motion";
 import heroImg from "../assets/hero.png";
@@ -9,7 +9,7 @@ const HeroExact = () => {
     <section
       id="home"
       className="relative min-h-[82vh] overflow-hidden py-12"
-      style={{ backgroundColor: "#e9f7eb" }} // light background matching brand
+      style={{ backgroundColor: "#e9f7eb" }}
     >
       {/* Decorative Shapes */}
       <div className="absolute inset-0 pointer-events-none">
@@ -59,7 +59,7 @@ const HeroExact = () => {
             {/* CTA BUTTONS */}
             <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
               <a
-                href="#order"
+                href="/products/all-products"
                 className="inline-block px-6 py-3 rounded-full text-lg font-semibold shadow-lg transition"
                 style={{
                   backgroundColor: "#57b957",
@@ -70,14 +70,14 @@ const HeroExact = () => {
               </a>
 
               <a
-                href="#explore"
+                href="/about"
                 className="inline-block border-2 px-6 py-3 rounded-full text-lg font-semibold transition"
                 style={{
                   borderColor: "#57b957",
                   color: "#2f5f2f"
                 }}
               >
-                Explore
+                About
               </a>
             </div>
 
@@ -103,7 +103,7 @@ const HeroExact = () => {
               </div>
 
               <div className="ml-3 text-sm font-medium" style={{ color: "#2f5f2f" }}>
-                www.originorganic.com
+                www.originorganic.in
               </div>
             </div>
           </motion.div>

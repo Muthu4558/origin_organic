@@ -1,16 +1,25 @@
 // src/pages/Oils.jsx
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { FiSearch, FiFilter, FiChevronDown, FiRefreshCw } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
 const BRAND_DARK = "#3e772f";
 
 const Oils = () => {
+  const location = useLocation();
+
+  // ensure page starts at top whenever this component is mounted / route changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // change to window.scrollTo(0, 0) for instant
+  }, [location.pathname]);
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -19,11 +28,12 @@ const Oils = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [offerOnly, setOfferOnly] = useState(false);
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { loading, startLoading, stopLoading } = useLoading();
+
 
   // Fetch Oil Products
   useEffect(() => {
-    setLoading(true);
+    startLoading();
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Oils`)
       .then((res) => {
@@ -35,7 +45,7 @@ const Oils = () => {
         setProducts([]);
         setFilteredProducts([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => stopLoading());
   }, []);
 
   // Filters & Sorting
@@ -240,9 +250,7 @@ const Oils = () => {
 
               {/* Mobile dropdown */}
               <div className="lg:hidden">
-                <button
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm"
-                >
+                <button className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm">
                   <FiChevronDown />
                 </button>
               </div>

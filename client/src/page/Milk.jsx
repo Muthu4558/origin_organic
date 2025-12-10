@@ -1,6 +1,7 @@
 // src/pages/Milk.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import Navbar from "../components/Navbar";
@@ -12,11 +13,18 @@ import {
   FiRefreshCw,
   FiX,
 } from "react-icons/fi";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
-const BRAND_DARK = "#3e772f";
 
 const Milk = () => {
+  const location = useLocation();
+
+  // scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -25,27 +33,49 @@ const Milk = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [offerOnly, setOfferOnly] = useState(false);
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
+
+  // <-- IMPORTANT: include `loading` here (was missing)
+  const { loading, startLoading, stopLoading } = useLoading();
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    // Endpoint matches the Masala pattern; change to 'Milk Products' or 'Milk' if your backend expects that
+    // cancel token to avoid updating state after unmount
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    // start loader
+    startLoading();
+
     axios
-      .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Milk Items`)
+      .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Milk Products`, {
+        signal,
+      })
       .then((res) => {
         setProducts(res.data || []);
         setFilteredProducts(res.data || []);
       })
       .catch((err) => {
+        if (axios.isCancel(err) || err.name === "CanceledError") {
+          // request was cancelled, ignore
+          return;
+        }
         console.error("Error loading milk products:", err);
         setProducts([]);
         setFilteredProducts([]);
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        stopLoading();
+      });
 
+    return () => {
+      // cancel request on unmount
+      controller.abort();
+    };
+    // include startLoading/stopLoading so effect sees latest refs
+  }, [startLoading, stopLoading]);
+
+  // filtering logic (unchanged)
   useEffect(() => {
     let filtered = [...products];
 
@@ -104,10 +134,7 @@ const Milk = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
           <div className="flex flex-col lg:flex-row items-center gap-10">
             <div className="lg:w-2/3 text-center lg:text-left">
-              <h1
-                className="text-3xl sm:text-4xl lg:text-5xl font-extrabold"
-                style={{ color: "#111827" }}
-              >
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold" style={{ color: "#111827" }}>
                 Explore <span style={{ color: BRAND }}>Milk & Dairy</span>
               </h1>
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto lg:mx-0">
@@ -142,11 +169,7 @@ const Milk = () => {
             {/* HERO IMAGE */}
             <div className="lg:w-1/3 flex justify-center lg:justify-end">
               <div className="w-48 h-40 sm:w-56 sm:h-44 rounded-2xl bg-gradient-to-tr from-[#eef7ee] to-white border border-gray-100 shadow-md flex items-center justify-center">
-                <img
-                  src="/assets/milk.svg"
-                  alt="milk products"
-                  className="w-32 sm:w-40 object-contain"
-                />
+                <img src="/assets/milk.svg" alt="milk products" className="w-32 sm:w-40 object-contain" />
               </div>
             </div>
           </div>
@@ -174,11 +197,7 @@ const Milk = () => {
 
               {/* DESKTOP SELECTS */}
               <div className="hidden md:flex items-center gap-3">
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="px-4 py-2 rounded-full border border-gray-200 bg-white"
-                >
+                <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="px-4 py-2 rounded-full border border-gray-200 bg-white">
                   <option value="all">All prices</option>
                   <option value="0-100">₹0 - ₹100</option>
                   <option value="100-500">₹100 - ₹500</option>
@@ -186,11 +205,7 @@ const Milk = () => {
                   <option value="1000-999999">₹1000+</option>
                 </select>
 
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="px-4 py-2 rounded-full border border-gray-200 bg-white"
-                >
+                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="px-4 py-2 rounded-full border border-gray-200 bg-white">
                   <option value="">Sort</option>
                   <option value="lowToHigh">Low → High</option>
                   <option value="highToLow">High → Low</option>
@@ -201,32 +216,16 @@ const Milk = () => {
             {/* CHECKBOXES */}
             <div className="flex items-center gap-4 flex-wrap">
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={offerOnly}
-                  onChange={(e) => setOfferOnly(e.target.checked)}
-                  className="h-5 w-5"
-                  style={{ accentColor: BRAND }}
-                />
+                <input type="checkbox" checked={offerOnly} onChange={(e) => setOfferOnly(e.target.checked)} className="h-5 w-5" style={{ accentColor: BRAND }} />
                 Offer only
               </label>
 
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={featuredOnly}
-                  onChange={(e) => setFeaturedOnly(e.target.checked)}
-                  className="h-5 w-5"
-                  style={{ accentColor: BRAND }}
-                />
+                <input type="checkbox" checked={featuredOnly} onChange={(e) => setFeaturedOnly(e.target.checked)} className="h-5 w-5" style={{ accentColor: BRAND }} />
                 Featured
               </label>
 
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md"
-                aria-label="Clear filters"
-              >
+              <button onClick={clearFilters} className="flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md" aria-label="Clear filters">
                 <FiRefreshCw /> Clear
               </button>
             </div>
@@ -234,11 +233,7 @@ const Milk = () => {
 
           {/* MOBILE SELECTS */}
           <div className="mt-4 md:hidden flex flex-col sm:flex-row gap-3">
-            <select
-              value={priceRange}
-              onChange={(e) => setPriceRange(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-full border border-gray-200 bg-white"
-            >
+            <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="flex-1 px-3 py-2 rounded-full border border-gray-200 bg-white">
               <option value="all">All prices</option>
               <option value="0-100">₹0 - ₹100</option>
               <option value="100-500">₹100 - ₹500</option>
@@ -246,11 +241,7 @@ const Milk = () => {
               <option value="1000-999999">₹1000+</option>
             </select>
 
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="px-3 py-2 rounded-full border border-gray-200 bg-white"
-            >
+            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="px-3 py-2 rounded-full border border-gray-200 bg-white">
               <option value="">Sort</option>
               <option value="lowToHigh">Low → High</option>
               <option value="highToLow">High → Low</option>
@@ -272,20 +263,9 @@ const Milk = () => {
               </div>
             </div>
           ) : filteredProducts.length ? (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8"
-            >
+            <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.06 } } }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
               {filteredProducts.map((product) => (
-                <motion.div
-                  key={product._id}
-                  variants={{
-                    hidden: { opacity: 0, y: 10 },
-                    visible: { opacity: 1, y: 0 },
-                  }}
-                >
+                <motion.div key={product._id} variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
                   <ProductCard product={product} />
                 </motion.div>
               ))}
@@ -294,12 +274,7 @@ const Milk = () => {
             <div className="py-20 text-center">
               <h3 className="text-2xl font-semibold">No products found</h3>
               <p className="text-gray-600 mt-2">Try adjusting your filters or search term.</p>
-              <button
-                onClick={clearFilters}
-                className="mt-4 px-5 py-2 bg-[#57b957] text-white rounded-full"
-              >
-                Reset filters
-              </button>
+              <button onClick={clearFilters} className="mt-4 px-5 py-2 bg-[#57b957] text-white rounded-full">Reset filters</button>
             </div>
           )}
         </section>
@@ -310,18 +285,11 @@ const Milk = () => {
       {/* MOBILE FILTER DRAWER */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-40">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileFiltersOpen(false)}
-          />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileFiltersOpen(false)} />
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 shadow-lg max-h-[75vh] overflow-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Filters</h3>
-              <button
-                className="p-2 rounded-full bg-gray-100"
-                onClick={() => setMobileFiltersOpen(false)}
-                aria-label="Close filters"
-              >
+              <button className="p-2 rounded-full bg-gray-100" onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
                 <FiX />
               </button>
             </div>
@@ -329,11 +297,7 @@ const Milk = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-full"
-                >
+                <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="w-full px-3 py-2 border rounded-full">
                   <option value="all">All prices</option>
                   <option value="0-100">₹0 - ₹100</option>
                   <option value="100-500">₹100 - ₹500</option>
@@ -344,11 +308,7 @@ const Milk = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Sort</label>
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-full"
-                >
+                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="w-full px-3 py-2 border rounded-full">
                   <option value="">Sort</option>
                   <option value="lowToHigh">Low → High</option>
                   <option value="highToLow">High → Low</option>
@@ -357,44 +317,19 @@ const Milk = () => {
 
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={offerOnly}
-                    onChange={(e) => setOfferOnly(e.target.checked)}
-                    className="h-5 w-5"
-                  />
+                  <input type="checkbox" checked={offerOnly} onChange={(e) => setOfferOnly(e.target.checked)} className="h-5 w-5" />
                   Offer only
                 </label>
 
                 <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={featuredOnly}
-                    onChange={(e) => setFeaturedOnly(e.target.checked)}
-                    className="h-5 w-5"
-                  />
+                  <input type="checkbox" checked={featuredOnly} onChange={(e) => setFeaturedOnly(e.target.checked)} className="h-5 w-5" />
                   Featured
                 </label>
               </div>
 
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    clearFilters();
-                    setMobileFiltersOpen(false);
-                  }}
-                  className="flex-1 px-4 py-2 bg-[#57b957] text-white rounded-full"
-                >
-                  Apply & Close
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileFiltersOpen(false);
-                  }}
-                  className="px-4 py-2 border rounded-full"
-                >
-                  Cancel
-                </button>
+                <button onClick={() => { clearFilters(); setMobileFiltersOpen(false); }} className="flex-1 px-4 py-2 bg-[#57b957] text-white rounded-full">Apply & Close</button>
+                <button onClick={() => { setMobileFiltersOpen(false); }} className="px-4 py-2 border rounded-full">Cancel</button>
               </div>
             </div>
           </div>
