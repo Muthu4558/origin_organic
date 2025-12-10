@@ -48,10 +48,18 @@ const LeafRingLoader = ({ size = 140 }) => {
         backdropFilter: "blur(6px)",
         zIndex: 9999,
         padding: 12,
+        pointerEvents: "none",
       }}
     >
       {/* Inline keyframes + small css reset for reduced-motion */}
       <style>{`
+      pointerEvents: "none",
+        width: 64,
+        height: 64,
+        borderRadius: "9999px",
+        border: "6px solid rgba(47,143,78,0.24)",
+        borderTopColor: "#2f8f4e",
+        animation: "spin 1s linear infinite",
         @keyframes ringRotate {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }

@@ -2,7 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useLoading } from "../context/LoadingContext";
 
 const CartContext = createContext();
 
@@ -12,7 +11,7 @@ export function useCart() {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
-  const { loading, startLoading, stopLoading } = useLoading();
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   function handleAuthError(error, showAlert = false) {
@@ -23,7 +22,7 @@ export function CartProvider({ children }) {
   }
 
   const fetchCart = async () => {
-    startLoading();
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart`, {
         credentials: "include",
@@ -38,7 +37,7 @@ export function CartProvider({ children }) {
       setCartItems([]);
       toast.error("Failed to fetch cart items.");
     } finally {
-      stopLoading();
+      setLoading(false);
     }
   };
 
