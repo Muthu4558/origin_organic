@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import { FaStar, FaShoppingCart, FaBolt, FaHeart } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
+import { useLoading } from "../context/LoadingContext";
 
 const BRAND = "#57b957";
 
@@ -16,13 +17,13 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { loading, setLoading, startLoading, stopLoading } = useLoading();
   const [activeTab, setActiveTab] = useState("specs");
   const [galleryIndex, setGalleryIndex] = useState(0);
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
+    startLoading();
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/id/${id}`)
       .then((res) => {
@@ -38,7 +39,7 @@ const ProductDetail = () => {
       })
       .finally(() => {
         if (!mounted) return;
-        setLoading(false);
+        stopLoading();
       });
     return () => {
       mounted = false;
