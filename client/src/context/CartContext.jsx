@@ -91,7 +91,7 @@ export function CartProvider({ children }) {
       }
       if (!res.ok) throw new Error("Delete failed");
 
-      toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
+      // toast.info("Item removed from cart.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
       fetchCart();
     } catch (err) {
       toast.error("Failed to remove item.", { autoClose: 1500, pauseOnHover: false, pauseOnFocusLoss: false });
