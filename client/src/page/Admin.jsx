@@ -194,7 +194,7 @@ const Admin = () => {
       );
     });
 
-  const categories = ["All", "Masala Items", "Milk", "Nuts", 'Oils'];
+  const categories = ["All", "Masala Items", "Milk Products", "Nuts", 'Oils'];
 
   return (
     <>

@@ -54,7 +54,6 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f6f0] via-white to-[#fffaf6] px-4 py-12 flex items-center justify-center">
-      {/* <ToastContainer position="top-right" /> */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
