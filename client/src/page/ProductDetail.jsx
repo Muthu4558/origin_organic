@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { FaStar, FaShoppingCart, FaBolt, FaHeart, FaShareAlt } from "react-icons/fa";
@@ -45,6 +46,7 @@ const Stars = ({ value = 4.2, size = "h-4 w-4" }) => {
 };
 
 const ProductDetail = () => {
+  const location = useLocation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -56,6 +58,11 @@ const ProductDetail = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [localLoading, setLocalLoading] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // change to window.scrollTo(0, 0) for instant
+  }, [location.pathname]);
+
 
   // fetch product
   useEffect(() => {
@@ -98,36 +105,26 @@ const ProductDetail = () => {
 
   // Add to cart (await addToCart)
   const handleAddToCart = async () => {
-    if (isAdding) return;
+    if (isAdding || !product) return;
     setIsAdding(true);
     try {
-      // ensure product loaded
-      if (!product) return;
-      // call addToCart with quantity object if your addToCart supports it
-      // If your addToCart signature is (product) only, change accordingly.
-      // This call awaits the server response.
-      await addToCart(product, { quantity });
-    } catch (err) {
-      // addToCart handles toasts; optional: console.log(err)
+      await addToCart(product, quantity); // ✅ FIX
     } finally {
       setIsAdding(false);
     }
   };
 
-  // Buy now: add then navigate to /cart
   const handleBuyNow = async () => {
-    if (isAdding) return;
+    if (isAdding || !product) return;
     setIsAdding(true);
     try {
-      if (!product) return;
-      await addToCart(product, { quantity });
+      await addToCart(product, quantity); // ✅ FIX
       navigate("/cart");
-    } catch (err) {
-      // handled inside addToCart
     } finally {
       setIsAdding(false);
     }
   };
+
 
   // quick keyboard-friendly thumbnail navigation
   const onThumbKey = (e, idx) => {

@@ -76,9 +76,9 @@ const Cart = () => {
   // Refresh cart when this page mounts or when route changes.
   // This ensures data is fetched after redirect from login.
   useEffect(() => {
-  fetchCart({ showLoader: true });
-  // eslint-disable-next-line
-}, []);
+    fetchCart({ showLoader: true });
+    // eslint-disable-next-line
+  }, []);
 
 
   const total = useMemo(

@@ -1,12 +1,11 @@
-import React, { createContext, useState, useContext, useRef } from "react";
+import React, { createContext, useContext, useState, useRef } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { useLoading } from "./LoadingContext";
 
 const CartContext = createContext();
 
-export function useCart() {
-  return useContext(CartContext);
-}
+export const useCart = () => useContext(CartContext);
 
 const safeJson = async (res) => {
   try {
@@ -16,30 +15,19 @@ const safeJson = async (res) => {
   }
 };
 
-export function CartProvider({ children }) {
+export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const { startLoading, stopLoading } = useLoading();
+  const navigate = useNavigate();
 
-  const fetchControllerRef = useRef(null);
-  const lastFetchAtRef = useRef(0);
+  const controllerRef = useRef(null);
 
-  const setItemsOptimistic = (updater) => {
-    setCartItems((cur) => (typeof updater === "function" ? updater(cur) : updater) ?? []);
-  };
-
-  /**
-   * Fetch cart ONLY when explicitly called
-   */
-  const fetchCart = async (options = { showLoader: false }) => {
-    const now = Date.now();
-    if (now - lastFetchAtRef.current < 300) return;
-    lastFetchAtRef.current = now;
-
-    if (fetchControllerRef.current) fetchControllerRef.current.abort();
+  const fetchCart = async (opts = { showLoader: false }) => {
+    if (controllerRef.current) controllerRef.current.abort();
     const controller = new AbortController();
-    fetchControllerRef.current = controller;
+    controllerRef.current = controller;
 
-    if (options.showLoader) startLoading();
+    if (opts.showLoader) startLoading();
 
     try {
       const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart`, {
@@ -52,70 +40,69 @@ export function CartProvider({ children }) {
         return;
       }
 
-      if (!res.ok) throw new Error("Fetch failed");
+      if (!res.ok) throw new Error();
 
       const data = await res.json();
       setCartItems(data.items || []);
     } catch (err) {
       if (err.name !== "AbortError") {
-        toast.error("Failed to fetch cart");
+        toast.error("Failed to load cart");
       }
     } finally {
-      if (options.showLoader) stopLoading();
+      if (opts.showLoader) stopLoading();
     }
   };
 
-  /**
-   * Add to cart
-   */
   const addToCart = async (product, quantity = 1) => {
-    setItemsOptimistic((cur) => [
-      ...cur,
-      { product, quantity },
-    ]);
-
     try {
       const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ productId: product._id, quantity }),
+        body: JSON.stringify({
+          productId: product._id,
+          quantity,
+        }),
       });
 
-      if (res.status === 401) return;
-      if (!res.ok) throw new Error();
+      if (res.status === 401) {
+        toast.error("Please login to add products to cart");
+        navigate("/login");
+        return;
+      }
 
+      if (!res.ok) {
+        const err = await safeJson(res);
+        throw new Error(err?.message || "Add failed");
+      }
+
+      toast.success(`${product.name} added to cart`);
       fetchCart();
-    } catch {
-      toast.error("Failed to add item");
-      fetchCart();
+    } catch (err) {
+      toast.error(err.message || "Failed to add product");
     }
   };
 
   const removeFromCart = async (productId) => {
-    setItemsOptimistic((cur) => cur.filter((i) => i.product._id !== productId));
-
     try {
-      const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart/remove/${productId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/cart/remove/${productId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) throw new Error();
+
+      toast.success("Item removed");
       fetchCart();
     } catch {
       toast.error("Failed to remove item");
-      fetchCart();
     }
   };
 
   const updateQuantity = async (productId, quantity) => {
-    setItemsOptimistic((cur) =>
-      cur.map((i) =>
-        i.product._id === productId ? { ...i, quantity } : i
-      )
-    );
-
     try {
       const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart/update`, {
         method: "PUT",
@@ -125,10 +112,10 @@ export function CartProvider({ children }) {
       });
 
       if (!res.ok) throw new Error();
+
       fetchCart();
     } catch {
-      toast.error("Update failed");
-      fetchCart();
+      toast.error("Failed to update quantity");
     }
   };
 
@@ -140,8 +127,10 @@ export function CartProvider({ children }) {
       });
 
       if (!res.ok) throw new Error();
-      toast.success("Order placed");
+
+      toast.success("Order placed successfully");
       setCartItems([]);
+      navigate("/thankyou");
     } catch {
       toast.error("Checkout failed");
     }
@@ -161,4 +150,4 @@ export function CartProvider({ children }) {
       {children}
     </CartContext.Provider>
   );
-}
+};
