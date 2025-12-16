@@ -17,6 +17,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import ProductDetail from "./page/ProductDetail";
 import ThankYou from "./page/thankyou";
 import About from "./components/About";
+import Checkout from "./page/Checkout";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -40,6 +41,7 @@ const AppContent = () => {
                 <Route path="/products/nuts" element={<Nuts />} />
                 <Route path="/products/oils" element={<Oils />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/thankyou" element={<ThankYou />} />
                 {/* admin */}
                 <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />

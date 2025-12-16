@@ -119,21 +119,8 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const checkoutCart = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/api/cart/checkout`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error();
-
-      toast.success("Order placed successfully");
-      setCartItems([]);
-      navigate("/thankyou");
-    } catch {
-      toast.error("Checkout failed");
-    }
+  const checkoutCart = () => {
+    navigate("/checkout");   // ✅ JUST NAVIGATE
   };
 
   return (

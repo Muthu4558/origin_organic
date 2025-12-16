@@ -88,24 +88,24 @@ export const logoutUser = (req, res) => {
 };
 
 export const getProfile = async (req, res) => {
-  if (!req.user)
+  if (!req.user) {
     return res.status(404).json({ message: "User not found" });
+  }
 
   res.json({
     name: req.user.name,
     number: req.user.number,
     email: req.user.email,
+    addresses: req.user.addresses || [],
   });
 };
 
 export const updateProfile = async (req, res) => {
-  const userId = req.user._id;
-
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const { name, number, email } = req.body;
+    const { name, email, number } = req.body;
 
     user.name = name || user.name;
     user.email = email || user.email;
@@ -113,12 +113,74 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
+    // ✅ RETURN FULL PROFILE (IMPORTANT)
     res.json({
       name: user.name,
       email: user.email,
       number: user.number,
+      addresses: user.addresses || [],
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Profile update failed" });
+  }
+};
+
+export const addAddress = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.addresses.push(req.body);
+    await user.save();
+
+    res.json(user.addresses);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to add address" });
+  }
+};
+
+export const updateAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const address = user.addresses.id(addressId);
+    if (!address) {
+      return res.status(404).json({ message: "Address not found" });
+    }
+
+    // ✅ UPDATE FIELDS SAFELY (NO REPLACEMENT)
+    Object.keys(req.body).forEach((key) => {
+      address[key] = req.body[key];
+    });
+
+    // ✅ SAVE WITHOUT FAILING REQUIRED FIELDS
+    await user.save({ validateModifiedOnly: true });
+
+    res.json(user.addresses);
+  } catch (err) {
+    console.error("UPDATE ADDRESS ERROR:", err);
+    res.status(500).json({ message: "Failed to update address" });
+  }
+};
+
+export const deleteAddress = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.addresses = user.addresses.filter(
+      (addr) => addr._id.toString() !== req.params.addressId
+    );
+
+    await user.save();
+    res.json(user.addresses);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete address" });
   }
 };
