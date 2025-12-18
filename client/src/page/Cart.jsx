@@ -253,7 +253,7 @@ const Cart = () => {
                   </div>
                   <div className="flex items-center justify-between text-sm text-gray-600">
                     <span>Estimated delivery</span>
-                    <span>3–5 days</span>
+                    <span>5–7 days</span>
                   </div>
                 </div>
 
@@ -265,7 +265,7 @@ const Cart = () => {
                     }
                     checkoutCart();
                   }}
-                  className="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-white font-semibold"
+                  className="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-white font-semibold cursor-pointer"
                   style={{ background: BRAND }}
                 >
                   <FaShoppingCart /> Proceed to Checkout

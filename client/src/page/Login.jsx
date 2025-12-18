@@ -202,7 +202,7 @@ const Login = () => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-full text-white font-semibold shadow"
+                className="w-full py-3 rounded-full text-white font-semibold shadow cursor-pointer"
                 style={{ background: BRAND }}
               >
                 {loading ? (

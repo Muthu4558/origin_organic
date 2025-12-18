@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { MdDashboard, MdArrowRightAlt } from "react-icons/md";
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -16,112 +16,179 @@ const AdminOrders = () => {
                     { withCredentials: true }
                 );
                 setOrders(res.data || []);
-                setLoading(false);
-            } catch (err) {
-                setLoading(false);
+            } catch {
                 navigate("/login");
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchAllOrders();
     }, []);
 
+    const getCurrentStatus = (order) => {
+        if (order.currentStatus) return order.currentStatus;
+        if (order.statusTimeline?.delivered?.status) return "DELIVERED";
+        if (order.statusTimeline?.dispatched?.status) return "DISPATCHED";
+        return "PREPARING";
+    };
+
+    const statusColor = {
+        PREPARING: "bg-yellow-100 text-yellow-700",
+        DISPATCHED: "bg-blue-100 text-blue-700",
+        DELIVERED: "bg-green-100 text-green-700",
+    };
+
     return (
-        <>
-            <Navbar />
+        <div className="min-h-screen mt-15 pb-12 px-3 sm:px-4">
+            {/* HEADER */}
+            <div className="max-w-7xl mx-auto text-2xl sm:text-4xl font-bold flex items-center gap-3 mb-4">
+                <MdDashboard />
+                Admin <span className="text-[#57b957]">Dashboard</span>
+            </div>
 
-            <div className="min-h-screen pt-28 pb-12 px-4">
-                <div className="max-w-6xl mx-auto">
+            {/* BREADCRUMB */}
+            <div className="max-w-7xl mx-auto mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
 
-                    <h1 className="text-3xl font-bold mb-6">
-                        Customer Orders
-                    </h1>
+                    <Link
+                        to="/admin"
+                        className="text-sm font-medium text-gray-600 hover:text-[#57b957] transition"
+                    >
+                        Home
+                    </Link>
 
-                    {loading && (
-                        <p className="text-center text-gray-500">
-                            Loading orders...
-                        </p>
-                    )}
+                    <MdArrowRightAlt className="text-gray-400 text-lg" />
 
-                    {!loading && orders.length === 0 && (
-                        <p className="text-center text-gray-500">
-                            No orders found.
-                        </p>
-                    )}
+                    <Link
+                        to="/admin/orders"
+                        className="text-sm font-semibold text-[#57b957]"
+                    >
+                        Orders
+                    </Link>
+                </div>
+            </div>
 
-                    <div className="space-y-6">
-                        {orders.map((order) => (
-                            <div
-                                key={order._id}
-                                className="bg-white rounded-xl shadow border border-[#57b957] p-5"
-                            >
-                                {/* HEADER */}
-                                <div className="flex flex-wrap justify-between gap-3 mb-4">
-                                    <div>
-                                        <p className="font-semibold">
-                                            {order.user?.name}
+            <div className="max-w-7xl mx-auto">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6">
+                    Customer Orders
+                </h1>
+
+                {loading && (
+                    <p className="text-center text-gray-500">Loading orders...</p>
+                )}
+                {!loading && orders.length === 0 && (
+                    <p className="text-center text-gray-500">No orders found.</p>
+                )}
+
+                <div className="space-y-6 sm:space-y-8">
+                    {orders.map((order) => {
+                        const currentStatus = getCurrentStatus(order);
+                        const address = order.address || {};
+
+                        return (
+                            <div key={order._id} className="relative">
+                                {/* STATUS BADGE */}
+                                <div className="absolute -top-3 right-3 sm:right-4 z-10">
+                                    <span
+                                        className={`px-3 py-1 text-xs font-semibold rounded-full shadow ${statusColor[currentStatus]}`}
+                                    >
+                                        {currentStatus}
+                                    </span>
+                                </div>
+
+                                {/* CARD */}
+                                <div
+                                    onClick={() => navigate(`/order/${order._id}`)}
+                                    className="bg-white rounded-xl shadow border border-[#57b957] p-4 sm:p-5 cursor-pointer hover:shadow-lg transition"
+                                >
+                                    {/* CUSTOMER DETAILS */}
+                                    <div className="mb-4">
+                                        <h3 className="font-semibold text-gray-800 mb-1">
+                                            Customer Details
+                                        </h3>
+                                        <p className="text-sm text-gray-700 break-words">
+                                            <strong>Name:</strong> {order.user?.name}
                                         </p>
-                                        <p className="text-sm text-gray-500">
-                                            {order.user?.email}
+                                        <p className="text-sm text-gray-700 break-words">
+                                            <strong>Email:</strong> {order.user?.email}
                                         </p>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-700">
+                                            <strong>Phone:</strong> {order.user?.number}
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                                            Ordered on:{" "}
                                             {new Date(order.createdAt).toLocaleDateString("en-GB")}
                                         </p>
                                     </div>
 
-                                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">
-                                        {order.status}
-                                    </span>
-                                </div>
+                                    {/* ADDRESS */}
+                                    <div className="mb-4 bg-gray-50 p-3 rounded-lg border text-sm">
+                                        <h4 className="font-semibold mb-1">Delivery Address</h4>
+                                        <p className="text-gray-700 break-words">
+                                            {address.street}, {address.area}
+                                        </p>
+                                        <p className="text-gray-700 break-words">
+                                            {address.city}, {address.district}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            {address.state} - {address.pincode}
+                                        </p>
+                                        {address.landmark && (
+                                            <p className="text-gray-500">
+                                                Landmark: {address.landmark}
+                                            </p>
+                                        )}
+                                    </div>
 
-                                {/* ITEMS */}
-                                <div className="divide-y">
-                                    {order.items.map((item, idx) => (
-                                        <div key={idx} className="flex items-center gap-4 py-3">
-                                            <img
-                                                src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${item.product.image}`}
-                                                alt={item.product.name}
-                                                className="w-14 h-14 object-cover rounded border"
-                                            />
-
-                                            <div className="flex-1">
-                                                <p className="font-medium">
-                                                    {item.product.name}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Qty: {item.quantity}
+                                    {/* ITEMS */}
+                                    <div className="divide-y">
+                                        {order.items.map((item, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="flex items-start sm:items-center gap-3 sm:gap-4 py-3"
+                                            >
+                                                <img
+                                                    src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${item.product.image}`}
+                                                    alt={item.product.name}
+                                                    className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded border"
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="font-medium text-sm sm:text-base">
+                                                        {item.product.name}
+                                                    </p>
+                                                    <p className="text-xs sm:text-sm text-gray-500">
+                                                        Qty: {item.quantity}
+                                                    </p>
+                                                </div>
+                                                <p className="font-semibold text-sm sm:text-base">
+                                                    ₹{item.price * item.quantity}
                                                 </p>
                                             </div>
+                                        ))}
+                                    </div>
 
-                                            <p className="font-semibold">
-                                                ₹{item.price * item.quantity}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* FOOTER */}
-                                <div className="flex flex-wrap justify-between items-center border-t pt-4 mt-4 gap-3">
-                                    <p className="text-sm">
-                                        Payment:{" "}
-                                        <span className="font-medium">
-                                            {order.paymentMethod === "COD"
-                                                ? "Cash on Delivery"
-                                                : "Online Payment"}
-                                        </span>
-                                    </p>
-
-                                    <p className="font-semibold text-[#57b957]">
-                                        Total: ₹{order.totalAmount}
-                                    </p>
+                                    {/* FOOTER */}
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-t pt-4 mt-4 gap-2">
+                                        <p className="text-sm">
+                                            Payment:{" "}
+                                            <span className="font-medium">
+                                                {order.paymentMethod === "COD"
+                                                    ? "Cash on Delivery"
+                                                    : "Online Payment"}
+                                            </span>
+                                        </p>
+                                        <p className="font-semibold text-[#57b957] text-sm sm:text-base">
+                                            Total: ₹{order.totalAmount}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-
+                        );
+                    })}
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

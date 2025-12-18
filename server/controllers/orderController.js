@@ -5,16 +5,9 @@ export const placeOrder = async (req, res) => {
   try {
     const { address, paymentMethod, paymentId } = req.body;
 
-    if (!address) {
-      return res.status(400).json({ message: "Address required" });
-    }
-
-    if (!paymentMethod) {
-      return res.status(400).json({ message: "Payment method required" });
-    }
-
-    const cart = await Cart.findOne({ user: req.user._id })
-      .populate("items.product");
+    const cart = await Cart.findOne({ user: req.user._id }).populate(
+      "items.product"
+    );
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
@@ -31,21 +24,34 @@ export const placeOrder = async (req, res) => {
       0
     );
 
+    const estimatedDeliveryDate = new Date();
+    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 7);
+
     const order = await Order.create({
       user: req.user._id,
       items,
       address,
       totalAmount,
-      paymentMethod,        // ✅ SAVED
-      paymentId: paymentId || null, // ✅ SAVED
+      paymentMethod,
+      paymentId: paymentId || null,
+
+      estimatedDeliveryDate,
+
+      statusTimeline: {
+        preparing: {
+          status: true,
+          date: new Date(),
+        },
+      },
+
+      currentStatus: "PREPARING",
     });
 
     cart.items = [];
     await cart.save();
 
-    res.json({ message: "Order placed successfully", order });
+    res.json(order);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Order placement failed" });
   }
 };

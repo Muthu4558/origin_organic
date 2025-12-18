@@ -7,6 +7,7 @@ import {
   MdEdit,
   MdSearch,
   MdFilterList,
+  MdDashboard,
 } from "react-icons/md";
 import {
   FaPlus,
@@ -22,6 +23,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { useLoading } from "../context/LoadingContext";
+import { Link } from "react-router-dom";
 
 const BRAND = "#57b957";
 
@@ -199,8 +201,25 @@ const Admin = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen py-33 px-4">
+      {/* <Navbar /> */}
+      <div className="min-h-screen py-10 px-4">
+        <div className="max-w-7xl mx-auto text-4xl font-bold flex items-center gap-3 mb-4">
+          <MdDashboard /> Admin <span className="text-[#57b957]">Dashboard</span>
+        </div>
+
+        {/* Navigation */}
+        <div className="max-w-7xl mx-auto mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
+
+            <Link
+              to="/admin"
+              className="text-sm font-medium text-[#57b957]"
+            >
+              Home
+            </Link>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
@@ -215,21 +234,21 @@ const Admin = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
               <button
                 onClick={() => navigate("/admin/orders")}
-                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto"
+                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto cursor-pointer"
               >
                 <FaFirstOrder /> Customer Orders
               </button>
 
               <button
                 onClick={() => setShowModal(true)}
-                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto"
+                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto cursor-pointer"
               >
                 <FaPlus /> Add Product
               </button>
 
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center gap-2 justify-center border border-red-600 text-red-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition w-full sm:w-auto"
+                className="inline-flex items-center gap-2 justify-center border border-red-600 text-red-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition w-full sm:w-auto cursor-pointer"
               >
                 <FaSignOutAlt /> Logout
               </button>
@@ -254,7 +273,7 @@ const Admin = () => {
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 focus:outline-none"
+                  className="px-3 py-2 rounded-lg border border-gray-200 focus:outline-none cursor-pointer"
                 >
                   {categories.map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -269,7 +288,7 @@ const Admin = () => {
                   type="checkbox"
                   checked={showFeaturedOnly}
                   onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-                  className="h-4 w-4"
+                  className="h-4 w-4 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700">Show featured</span>
               </label>
@@ -318,14 +337,14 @@ const Admin = () => {
                       <button
                         onClick={() => handleEdit(product)}
                         title="Edit"
-                        className="p-2 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-600 transition"
+                        className="p-2 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-600 transition cursor-pointer"
                       >
                         <MdEdit />
                       </button>
                       <button
                         onClick={() => handleDelete(product._id)}
                         title="Delete"
-                        className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition"
+                        className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer"
                       >
                         <MdDelete />
                       </button>

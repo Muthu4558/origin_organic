@@ -166,14 +166,14 @@ const Profile = () => {
 
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="mt-4 w-full bg-[#57b957] text-white py-2 rounded"
+                  className="mt-4 w-full bg-[#57b957] text-white py-2 rounded cursor-pointer"
                 >
                   <FaEdit className="inline mr-2" /> Edit Profile
                 </button>
 
                 <button
                   onClick={handleLogout}
-                  className="mt-3 w-full border border-red-600 text-red-600 py-2 rounded"
+                  className="mt-3 w-full border border-red-600 text-red-600 py-2 rounded cursor-pointer"
                 >
                   Logout
                 </button>
@@ -193,7 +193,7 @@ const Profile = () => {
                     <h3 className="font-semibold">Addresses</h3>
                     <button
                       onClick={() => setIsAddressModalOpen(true)}
-                      className="px-3 py-1 bg-[#57b957] text-white rounded text-sm"
+                      className="px-3 py-1 bg-[#57b957] text-white rounded text-sm cursor-pointer"
                     >
                       <FaPlus className="inline mr-1" /> Add
                     </button>
@@ -274,7 +274,7 @@ const Profile = () => {
 
             <button
               onClick={handleSave}
-              className="w-full bg-[#57b957] text-white py-2 rounded"
+              className="w-full bg-[#57b957] text-white py-2 rounded cursor-pointer"
             >
               <FaSave className="inline mr-2" /> Save
             </button>
@@ -309,7 +309,7 @@ const Profile = () => {
 
             <button
               onClick={handleAddAddress}
-              className="w-full bg-[#57b957] text-white py-2 rounded"
+              className="w-full bg-[#57b957] text-white py-2 rounded cursor-pointer"
             >
               Save Address
             </button>

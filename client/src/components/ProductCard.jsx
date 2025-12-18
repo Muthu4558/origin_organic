@@ -149,7 +149,7 @@ const ProductCard = ({ product }) => {
                 aria-label={`Add ${product?.name} to cart`}
               >
                 <FaShoppingCart />
-                <span className="hidden sm:inline">Add</span>
+                <span className="hidden sm:inline cursor-pointer">Add</span>
 
                 {/* +1 micro-badge */}
                 <motion.span
@@ -165,7 +165,7 @@ const ProductCard = ({ product }) => {
 
               <button
                 onClick={() => navigate(`/products/${product?._id}`)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white hover:bg-gray-50 transition"
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer"
                 aria-label={`View ${product?.name} details`}
               >
                 Details

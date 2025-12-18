@@ -1,8 +1,11 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { FaCheckCircle } from 'react-icons/fa';
+import React from "react";
+import { motion } from "framer-motion";
+import { FaCheckCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const ThankYou = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col justify-center items-center h-screen bg-green-50 px-4">
       <motion.div
@@ -13,6 +16,7 @@ const ThankYou = () => {
       >
         <FaCheckCircle className="text-7xl" />
       </motion.div>
+
       <motion.h2
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -21,6 +25,7 @@ const ThankYou = () => {
       >
         Order Confirmed!
       </motion.h2>
+
       <motion.p
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -29,6 +34,17 @@ const ThankYou = () => {
       >
         Thank you for your purchase. Your order has been placed successfully.
       </motion.p>
+
+      {/* ✅ VIEW ORDER BUTTON */}
+      <motion.button
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.8, duration: 0.6 }}
+        onClick={() => navigate("/order")}
+        className="mt-6 px-6 py-3 bg-[#57b957] text-white rounded-lg font-semibold hover:bg-green-600 transition cursor-pointer"
+      >
+        View My Orders
+      </motion.button>
     </div>
   );
 };

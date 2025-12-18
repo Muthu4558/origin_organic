@@ -15,34 +15,52 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        quantity: { type: Number, required: true },
-        price: { type: Number, required: true },
+        quantity: Number,
+        price: Number,
       },
     ],
 
-    address: {
-      street: String,
-      landmark: String,
-      area: String,
-      city: String,
-      district: String,
-      state: String,
-      pincode: String,
-    },
+    address: Object,
 
-    totalAmount: { type: Number, required: true },
+    totalAmount: Number,
 
-    /* ✅ ADD THESE */
     paymentMethod: {
       type: String,
       enum: ["COD", "ONLINE"],
       required: true,
     },
-    paymentId: {
-      type: String,
+    paymentId: String,
+
+    /* ✅ DELIVERY DATES */
+    estimatedDeliveryDate: {
+      type: Date,
+      required: true,
+    },
+    expectedDeliveryDate: {
+      type: Date, // admin entered
     },
 
-    status: { type: String, default: "Placed" },
+    /* ✅ ORDER TRACKING */
+    statusTimeline: {
+      preparing: {
+        status: { type: Boolean, default: true },
+        date: { type: Date, default: Date.now },
+      },
+      dispatched: {
+        status: { type: Boolean, default: false },
+        date: Date,
+      },
+      delivered: {
+        status: { type: Boolean, default: false },
+        date: Date,
+      },
+    },
+
+    currentStatus: {
+      type: String,
+      enum: ["PREPARING", "DISPATCHED", "DELIVERED"],
+      default: "PREPARING",
+    },
   },
   { timestamps: true }
 );

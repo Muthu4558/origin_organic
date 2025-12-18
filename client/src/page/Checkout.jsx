@@ -5,7 +5,8 @@ import { useCart } from "../context/CartContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTimes, FaPlus } from "react-icons/fa";
+import { FaEdit, FaPlus } from "react-icons/fa";
+import { MdClose } from "react-icons/md";
 
 /* ---------- Razorpay Loader ---------- */
 const loadRazorpay = () =>
@@ -41,9 +42,6 @@ const Checkout = () => {
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [editAddressForm, setEditAddressForm] = useState(emptyAddress);
 
-  /* ✅ NEW */
-  const [paymentMethod, setPaymentMethod] = useState("ONLINE"); // ONLINE | COD
-
   useEffect(() => {
     fetchCart();
     axios
@@ -64,7 +62,7 @@ const Checkout = () => {
     }, 0);
   }, [cartItems]);
 
-  /* ---------- ADDRESS ---------- */
+  /* ---------- ADDRESS APIs ---------- */
   const saveNewAddress = async () => {
     try {
       const res = await axios.post(
@@ -90,102 +88,61 @@ const Checkout = () => {
         { withCredentials: true }
       );
       setAddresses(res.data);
-      setSelectedAddress(res.data.find(a => a._id === editingAddressId));
       setEditingAddressId(null);
+      setEditAddressForm(emptyAddress);
       toast.success("Address updated");
     } catch {
       toast.error("Failed to update address");
     }
   };
 
-  /* ---------- COD ---------- */
-  const placeCodOrder = async () => {
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
-        {
-          address: selectedAddress,
-          paymentMethod: "COD",
-        },
-        { withCredentials: true }
-      );
-      toast.success("Order placed (COD)");
-      navigate("/thankyou");
-    } catch {
-      toast.error("COD order failed");
-    }
-  };
-
-  /* ---------- ONLINE ---------- */
-  const placeOnlineOrder = async () => {
-    const loaded = await loadRazorpay();
-    if (!loaded) return toast.error("Razorpay SDK failed");
-
-    try {
-      const orderRes = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
-        { amount: total },
-        { withCredentials: true }
-      );
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderRes.data.amount,
-        currency: "INR",
-        name: "Origin Organic",
-        order_id: orderRes.data.id,
-
-        handler: async (response) => {
-          try {
-            await axios.post(
-              `${import.meta.env.VITE_APP_BASE_URL}/api/payment/verify`,
-              response,
-              { withCredentials: true }
-            );
-
-            await axios.post(
-              `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
-              {
-                address: selectedAddress,
-                paymentMethod: "ONLINE",
-                paymentId: response.razorpay_payment_id,
-              },
-              { withCredentials: true }
-            );
-
-            toast.success("Payment successful");
-            navigate("/thankyou");
-          } catch {
-            toast.error("Payment verification failed");
-          }
-        },
-
-        prefill: {
-          name: profile?.name,
-          email: profile?.email,
-          contact: profile?.number,
-        },
-        theme: { color: "#57b957" },
-      };
-
-      new window.Razorpay(options).open();
-    } catch {
-      toast.error("Payment initiation failed");
-    }
-  };
-
-  const placeOrder = () => {
+  /* ---------- PAYMENT ---------- */
+  const placeOrder = async () => {
     if (!selectedAddress) return toast.error("Select address");
     if (!cartItems.length) return toast.error("Cart empty");
 
-    paymentMethod === "COD" ? placeCodOrder() : placeOnlineOrder();
+    const loaded = await loadRazorpay();
+    if (!loaded) return toast.error("Razorpay SDK failed");
+
+    const orderRes = await axios.post(
+      `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
+      { amount: total },
+      { withCredentials: true }
+    );
+
+    new window.Razorpay({
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: orderRes.data.amount,
+      currency: "INR",
+      name: "Origin Organic",
+      order_id: orderRes.data.id,
+      handler: async (response) => {
+        await axios.post(
+          `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
+          {
+            address: selectedAddress,
+            paymentMethod: "ONLINE",
+            paymentId: response.razorpay_payment_id,
+          },
+          { withCredentials: true }
+        );
+        toast.success("Payment successful");
+        navigate("/thankyou");
+      },
+      prefill: {
+        name: profile?.name,
+        email: profile?.email,
+        contact: profile?.number,
+      },
+      theme: { color: "#57b957" },
+    }).open();
   };
 
   return (
     <>
       <Navbar />
 
-      <div className="min-h-screen pt-24 pb-12 px-4 mt-15">
+      <div className="min-h-screen pt-30 pb-12 px-4">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
 
           {/* LEFT */}
@@ -199,30 +156,7 @@ const Checkout = () => {
               </div>
             )}
 
-            {/* PAYMENT METHOD */}
-            <div className="bg-white rounded-xl shadow p-5 border border-[#57b957]">
-              <h2 className="font-semibold mb-3">Payment Method</h2>
-
-              <label className="flex items-center gap-2 mb-2">
-                <input
-                  type="radio"
-                  checked={paymentMethod === "ONLINE"}
-                  onChange={() => setPaymentMethod("ONLINE")}
-                />
-                Online Payment
-              </label>
-
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={paymentMethod === "COD"}
-                  onChange={() => setPaymentMethod("COD")}
-                />
-                Cash on Delivery
-              </label>
-            </div>
-
-            {/* ✅ ADDRESS SECTION — SAME AS YOUR OLD CODE */}
+            {/* ADDRESS LIST */}
             <div className="bg-white rounded-xl shadow p-5 border border-[#57b957]">
               <div className="flex justify-between mb-4">
                 <h2 className="font-semibold text-lg">Delivery Address</h2>
@@ -231,7 +165,7 @@ const Checkout = () => {
                     setShowNewAddress(true);
                     setEditingAddressId(null);
                   }}
-                  className="flex items-center gap-2 text-[#57b957]"
+                  className="flex items-center gap-2 text-[#57b957] cursor-pointer"
                 >
                   <FaPlus /> Add Address
                 </button>
@@ -241,8 +175,10 @@ const Checkout = () => {
                 {addresses.map(a => (
                   <label
                     key={a._id}
-                    className={`flex gap-3 p-4 border rounded cursor-pointer
-                    ${selectedAddress?._id === a._id ? "bg-green-50 border-[#57b957]" : ""}`}
+                    className={`flex gap-3 p-4 border rounded-lg cursor-pointer
+                      ${selectedAddress?._id === a._id
+                        ? "bg-green-50 border-[#57b957]"
+                        : "hover:border-[#57b957]"}`}
                     onClick={() => setSelectedAddress(a)}
                   >
                     <input type="radio" checked={selectedAddress?._id === a._id} readOnly />
@@ -263,48 +199,80 @@ const Checkout = () => {
                 ))}
               </div>
 
-              {editingAddressId && (
-                <div className="mt-4 bg-gray-50 p-4 rounded">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {Object.keys(editAddressForm).map(f => (
+              {/* ADD ADDRESS */}
+              {showNewAddress && (
+                <div className="mt-6 bg-gray-50 border rounded-xl p-5">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold text-gray-800">Add New Address</h3>
+                    <button
+                      onClick={() => {
+                        setShowNewAddress(false);
+                        setNewAddress(emptyAddress);
+                      }}
+                      className="text-gray-500 hover:text-red-500"
+                    >
+                      <MdClose size={22} />
+                    </button>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {Object.keys(newAddress).map((f) => (
                       <input
                         key={f}
-                        value={editAddressForm[f]}
-                        onChange={e =>
-                          setEditAddressForm({ ...editAddressForm, [f]: e.target.value })
+                        className={`border rounded-lg px-3 py-2 ${f === "pincode" ? "sm:col-span-2" : ""}`}
+                        placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
+                        value={newAddress[f]}
+                        onChange={(e) =>
+                          setNewAddress({ ...newAddress, [f]: e.target.value })
                         }
-                        className="border p-2 rounded"
-                        placeholder={f}
                       />
                     ))}
                   </div>
+
                   <button
-                    onClick={updateAddress}
-                    className="mt-3 bg-[#57b957] text-white px-4 py-2 rounded"
+                    onClick={saveNewAddress}
+                    className="mt-5 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
                   >
-                    Save Changes
+                    Save Address
                   </button>
                 </div>
               )}
 
-              {showNewAddress && (
-                <div className="mt-4 grid sm:grid-cols-2 gap-3">
-                  {Object.keys(newAddress).map(f => (
-                    <input
-                      key={f}
-                      value={newAddress[f]}
-                      onChange={e =>
-                        setNewAddress({ ...newAddress, [f]: e.target.value })
-                      }
-                      className="border p-2 rounded"
-                      placeholder={f}
-                    />
-                  ))}
+              {/* EDIT ADDRESS */}
+              {editingAddressId && (
+                <div className="mt-6 bg-gray-50 border rounded-xl p-5">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold text-gray-800">Edit Address</h3>
+                    <button
+                      onClick={() => {
+                        setEditingAddressId(null);
+                        setEditAddressForm(emptyAddress);
+                      }}
+                      className="text-gray-500 hover:text-red-500"
+                    >
+                      <MdClose size={22} />
+                    </button>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {Object.keys(editAddressForm).map((f) => (
+                      <input
+                        key={f}
+                        className={`border rounded-lg px-3 py-2 ${f === "pincode" ? "sm:col-span-2" : ""}`}
+                        placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
+                        value={editAddressForm[f]}
+                        onChange={(e) =>
+                          setEditAddressForm({ ...editAddressForm, [f]: e.target.value })
+                        }
+                      />
+                    ))}
+                  </div>
+
                   <button
-                    onClick={saveNewAddress}
-                    className="sm:col-span-2 bg-[#57b957] text-white py-2 rounded"
+                    onClick={updateAddress}
+                    className="mt-5 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
                   >
-                    Save Address
+                    Save Changes
                   </button>
                 </div>
               )}
@@ -327,11 +295,16 @@ const Checkout = () => {
               <span className="text-[#57b957]">₹{total}</span>
             </div>
 
+            <div className="flex items-center justify-between text-sm text-gray-600 mt-4">
+              <span>Estimated delivery</span>
+              <span>5–7 days</span>
+            </div>
+
             <button
               onClick={placeOrder}
-              className="mt-5 w-full bg-[#57b957] text-white py-3 rounded-lg font-semibold"
+              className="mt-5 w-full bg-[#57b957] text-white py-3 rounded-lg font-semibold cursor-pointer"
             >
-              {paymentMethod === "COD" ? "Place Order (COD)" : "Pay & Place Order"}
+              Pay & Place Order
             </button>
           </div>
         </div>

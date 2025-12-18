@@ -20,6 +20,7 @@ import About from "./components/About";
 import Checkout from "./page/Checkout";
 import Order from "./page/Order";
 import AdminOrders from "./page/AdminOrders";
+import OrderDetails from "./page/OrderDetails";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -45,6 +46,7 @@ const AppContent = () => {
                 <Route path="/products/oils" element={<Oils />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order/:id" element={<OrderDetails />} />
                 <Route path="/thankyou" element={<ThankYou />} />
                 {/* admin */}
                 <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />
