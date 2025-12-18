@@ -14,6 +14,7 @@ import {
   FaCloudUploadAlt,
   //   FaCloudUpload,
   FaCloud,
+  FaFirstOrder,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -212,6 +213,13 @@ const Admin = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => navigate("/admin/orders")}
+                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto"
+              >
+                <FaFirstOrder /> Customer Orders
+              </button>
+
               <button
                 onClick={() => setShowModal(true)}
                 className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto"

@@ -7,6 +7,7 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
     items: [
       {
         product: {
@@ -18,6 +19,7 @@ const orderSchema = new mongoose.Schema(
         price: { type: Number, required: true },
       },
     ],
+
     address: {
       street: String,
       landmark: String,
@@ -27,7 +29,19 @@ const orderSchema = new mongoose.Schema(
       state: String,
       pincode: String,
     },
+
     totalAmount: { type: Number, required: true },
+
+    /* ✅ ADD THESE */
+    paymentMethod: {
+      type: String,
+      enum: ["COD", "ONLINE"],
+      required: true,
+    },
+    paymentId: {
+      type: String,
+    },
+
     status: { type: String, default: "Placed" },
   },
   { timestamps: true }

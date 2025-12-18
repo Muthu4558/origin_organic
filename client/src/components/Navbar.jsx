@@ -160,6 +160,10 @@ const Navbar = () => {
             <Link to="/profile" className="text-md font-semibold hover:text-[#57b957] transition">
               Profile
             </Link>
+
+            <Link to="/order" className="text-md font-semibold hover:text-[#57b957] transition">
+              My Order
+            </Link>
           </div>
 
           {/* Right Actions */}
@@ -271,6 +275,10 @@ const Navbar = () => {
 
                 <Link to="/profile" className="block font-medium" onClick={() => setMenuOpen(false)}>
                   Profile
+                </Link>
+
+                <Link to="/order" className="block font-medium" onClick={() => setMenuOpen(false)}>
+                  My Order
                 </Link>
 
                 <div className="flex gap-3">

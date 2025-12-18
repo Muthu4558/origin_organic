@@ -18,6 +18,8 @@ import ProductDetail from "./page/ProductDetail";
 import ThankYou from "./page/thankyou";
 import About from "./components/About";
 import Checkout from "./page/Checkout";
+import Order from "./page/Order";
+import AdminOrders from "./page/AdminOrders";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -34,6 +36,7 @@ const AppContent = () => {
                 {/* protected routes */}
                 <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
                 <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
+                <Route path="/order" element={<PrivateRoute><Order /></PrivateRoute>} />
                 {/* product routes */}
                 <Route path="/products/all-products" element={<AllProduct />} />
                 <Route path="/products/milk" element={<Milk />} />
@@ -45,6 +48,7 @@ const AppContent = () => {
                 <Route path="/thankyou" element={<ThankYou />} />
                 {/* admin */}
                 <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />
+                <Route path="/admin/orders" element={<PrivateRoute adminOnly={true}><AdminOrders /></PrivateRoute>} />
             </Routes>
         </>
     );

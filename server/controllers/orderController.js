@@ -3,10 +3,14 @@ import Order from "../models/Order.js";
 
 export const placeOrder = async (req, res) => {
   try {
-    const { address } = req.body;
+    const { address, paymentMethod, paymentId } = req.body;
 
     if (!address) {
       return res.status(400).json({ message: "Address required" });
+    }
+
+    if (!paymentMethod) {
+      return res.status(400).json({ message: "Payment method required" });
     }
 
     const cart = await Cart.findOne({ user: req.user._id })
@@ -32,9 +36,10 @@ export const placeOrder = async (req, res) => {
       items,
       address,
       totalAmount,
+      paymentMethod,        // ✅ SAVED
+      paymentId: paymentId || null, // ✅ SAVED
     });
 
-    // Clear cart
     cart.items = [];
     await cart.save();
 
