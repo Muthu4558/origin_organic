@@ -5,7 +5,17 @@ import { useCart } from "../context/CartContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTimes } from "react-icons/fa";
+import { FaEdit, FaTimes, FaPlus } from "react-icons/fa";
+
+/* ---------- Razorpay Loader ---------- */
+const loadRazorpay = () =>
+  new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 
 const emptyAddress = {
   street: "",
@@ -23,21 +33,19 @@ const Checkout = () => {
 
   const [profile, setProfile] = useState(null);
   const [addresses, setAddresses] = useState([]);
-
   const [selectedAddress, setSelectedAddress] = useState(null);
 
-  // 🔹 ADD NEW ADDRESS
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [newAddress, setNewAddress] = useState(emptyAddress);
 
-  // 🔹 EDIT ADDRESS
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [editAddressForm, setEditAddressForm] = useState(emptyAddress);
 
-  // ================= LOAD DATA =================
+  /* ✅ NEW */
+  const [paymentMethod, setPaymentMethod] = useState("ONLINE"); // ONLINE | COD
+
   useEffect(() => {
     fetchCart();
-
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`, {
         withCredentials: true,
@@ -49,16 +57,14 @@ const Checkout = () => {
       .catch(() => navigate("/login"));
   }, []);
 
-  // ================= TOTAL =================
   const total = useMemo(() => {
     return cartItems.reduce((sum, item) => {
-      const price =
-        item.product.offerPrice ?? item.product.price;
+      const price = item.product.offerPrice ?? item.product.price;
       return sum + price * item.quantity;
     }, 0);
   }, [cartItems]);
 
-  // ================= SAVE NEW ADDRESS =================
+  /* ---------- ADDRESS ---------- */
   const saveNewAddress = async () => {
     try {
       const res = await axios.post(
@@ -66,7 +72,6 @@ const Checkout = () => {
         newAddress,
         { withCredentials: true }
       );
-
       setAddresses(res.data);
       setSelectedAddress(res.data.at(-1));
       setShowNewAddress(false);
@@ -77,7 +82,6 @@ const Checkout = () => {
     }
   };
 
-  // ================= UPDATE EXISTING ADDRESS =================
   const updateAddress = async () => {
     try {
       const res = await axios.put(
@@ -85,181 +89,252 @@ const Checkout = () => {
         editAddressForm,
         { withCredentials: true }
       );
-
       setAddresses(res.data);
-      setSelectedAddress(
-        res.data.find((a) => a._id === editingAddressId)
-      );
-
+      setSelectedAddress(res.data.find(a => a._id === editingAddressId));
       setEditingAddressId(null);
-      setEditAddressForm(emptyAddress);
       toast.success("Address updated");
     } catch {
       toast.error("Failed to update address");
     }
   };
 
-  // ================= PLACE ORDER =================
-  const placeOrder = async () => {
-    if (!selectedAddress) {
-      return toast.error("Please select address");
-    }
-    if (cartItems.length === 0) {
-      return toast.error("Cart is empty");
-    }
-
+  /* ---------- COD ---------- */
+  const placeCodOrder = async () => {
     try {
       await axios.post(
         `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
-        { address: selectedAddress },
+        {
+          address: selectedAddress,
+          paymentMethod: "COD",
+        },
+        { withCredentials: true }
+      );
+      toast.success("Order placed (COD)");
+      navigate("/thankyou");
+    } catch {
+      toast.error("COD order failed");
+    }
+  };
+
+  /* ---------- ONLINE ---------- */
+  const placeOnlineOrder = async () => {
+    const loaded = await loadRazorpay();
+    if (!loaded) return toast.error("Razorpay SDK failed");
+
+    try {
+      const orderRes = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
+        { amount: total },
         { withCredentials: true }
       );
 
-      toast.success("Order placed");
-      navigate("/thankyou");
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderRes.data.amount,
+        currency: "INR",
+        name: "Origin Organic",
+        order_id: orderRes.data.id,
+
+        handler: async (response) => {
+          try {
+            await axios.post(
+              `${import.meta.env.VITE_APP_BASE_URL}/api/payment/verify`,
+              response,
+              { withCredentials: true }
+            );
+
+            await axios.post(
+              `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
+              {
+                address: selectedAddress,
+                paymentMethod: "ONLINE",
+                paymentId: response.razorpay_payment_id,
+              },
+              { withCredentials: true }
+            );
+
+            toast.success("Payment successful");
+            navigate("/thankyou");
+          } catch {
+            toast.error("Payment verification failed");
+          }
+        },
+
+        prefill: {
+          name: profile?.name,
+          email: profile?.email,
+          contact: profile?.number,
+        },
+        theme: { color: "#57b957" },
+      };
+
+      new window.Razorpay(options).open();
     } catch {
-      toast.error("Order failed");
+      toast.error("Payment initiation failed");
     }
+  };
+
+  const placeOrder = () => {
+    if (!selectedAddress) return toast.error("Select address");
+    if (!cartItems.length) return toast.error("Cart empty");
+
+    paymentMethod === "COD" ? placeCodOrder() : placeOnlineOrder();
   };
 
   return (
     <>
       <Navbar />
 
-      <div className="max-w-5xl mx-auto mt-24 px-4">
-        <h1 className="text-2xl font-bold mb-6">Checkout</h1>
+      <div className="min-h-screen pt-24 pb-12 px-4 mt-15">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
 
-        {/* USER DETAILS */}
-        {profile && (
-          <div className="border p-4 mb-6">
-            <p><b>Name:</b> {profile.name}</p>
-            <p><b>Email:</b> {profile.email}</p>
-            <p><b>Phone:</b> {profile.number}</p>
-          </div>
-        )}
+          {/* LEFT */}
+          <div className="lg:col-span-2 space-y-6">
 
-        {/* CART */}
-        <div className="border p-4 mb-6">
-          {cartItems.map((item) => (
-            <div key={item.product._id} className="flex justify-between mb-2">
-              <span>{item.product.name} × {item.quantity}</span>
-              <span>
-                ₹{(item.product.offerPrice ?? item.product.price) * item.quantity}
-              </span>
-            </div>
-          ))}
-          <div className="border-t mt-2 pt-2 font-bold">
-            Total: ₹{total}
-          </div>
-        </div>
+            {/* PROFILE */}
+            {profile && (
+              <div className="bg-white rounded-xl shadow p-5 border border-[#57b957]">
+                <h2 className="font-semibold mb-2">Customer Details</h2>
+                <p>{profile.name} | {profile.email} | {profile.number}</p>
+              </div>
+            )}
 
-        {/* ADDRESS SECTION */}
-        <div className="border p-4 mb-6">
-          <h2 className="font-semibold mb-3">Delivery Address</h2>
+            {/* PAYMENT METHOD */}
+            <div className="bg-white rounded-xl shadow p-5 border border-[#57b957]">
+              <h2 className="font-semibold mb-3">Payment Method</h2>
 
-          {addresses.map((a) => (
-            <div key={a._id} className="border rounded p-3 mb-2 relative">
-              <label className="cursor-pointer">
+              <label className="flex items-center gap-2 mb-2">
                 <input
                   type="radio"
-                  name="address"
-                  className="mr-2"
-                  checked={selectedAddress?._id === a._id}
-                  onChange={() => {
-                    setSelectedAddress(a);
-                    setEditingAddressId(null);
-                    setShowNewAddress(false);
-                  }}
+                  checked={paymentMethod === "ONLINE"}
+                  onChange={() => setPaymentMethod("ONLINE")}
                 />
-                {a.street}, {a.city}, {a.state} - {a.pincode}
+                Online Payment
               </label>
 
-              <button
-                onClick={() => {
-                  setEditingAddressId(a._id);
-                  setEditAddressForm(a);
-                }}
-                className="absolute top-2 right-2 text-gray-600"
-              >
-                <FaEdit />
-              </button>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={paymentMethod === "COD"}
+                  onChange={() => setPaymentMethod("COD")}
+                />
+                Cash on Delivery
+              </label>
             </div>
-          ))}
 
-          {/* EDIT ADDRESS FORM */}
-          {editingAddressId && (
-            <div className="mt-4 border p-3 rounded">
-              <div className="flex justify-between mb-2">
-                <h3 className="font-semibold">Edit Address</h3>
-                <button onClick={() => setEditingAddressId(null)}>
-                  <FaTimes />
+            {/* ✅ ADDRESS SECTION — SAME AS YOUR OLD CODE */}
+            <div className="bg-white rounded-xl shadow p-5 border border-[#57b957]">
+              <div className="flex justify-between mb-4">
+                <h2 className="font-semibold text-lg">Delivery Address</h2>
+                <button
+                  onClick={() => {
+                    setShowNewAddress(true);
+                    setEditingAddressId(null);
+                  }}
+                  className="flex items-center gap-2 text-[#57b957]"
+                >
+                  <FaPlus /> Add Address
                 </button>
               </div>
 
-              {Object.keys(editAddressForm).map((f) => (
-                <input
-                  key={f}
-                  value={editAddressForm[f]}
-                  onChange={(e) =>
-                    setEditAddressForm({
-                      ...editAddressForm,
-                      [f]: e.target.value,
-                    })
-                  }
-                  className="w-full border p-2 mb-2"
-                  placeholder={f}
-                />
-              ))}
+              <div className="space-y-3">
+                {addresses.map(a => (
+                  <label
+                    key={a._id}
+                    className={`flex gap-3 p-4 border rounded cursor-pointer
+                    ${selectedAddress?._id === a._id ? "bg-green-50 border-[#57b957]" : ""}`}
+                    onClick={() => setSelectedAddress(a)}
+                  >
+                    <input type="radio" checked={selectedAddress?._id === a._id} readOnly />
+                    <div className="flex-1">
+                      <p>{a.street}, {a.area}, {a.city}</p>
+                      <p className="text-sm text-gray-600">
+                        {a.district}, {a.state} - {a.pincode}
+                      </p>
+                    </div>
+                    <FaEdit
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingAddressId(a._id);
+                        setEditAddressForm(a);
+                      }}
+                    />
+                  </label>
+                ))}
+              </div>
 
-              <button
-                onClick={updateAddress}
-                className="bg-[#57b957] text-white px-4 py-2 rounded"
-              >
-                Save Changes
-              </button>
+              {editingAddressId && (
+                <div className="mt-4 bg-gray-50 p-4 rounded">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {Object.keys(editAddressForm).map(f => (
+                      <input
+                        key={f}
+                        value={editAddressForm[f]}
+                        onChange={e =>
+                          setEditAddressForm({ ...editAddressForm, [f]: e.target.value })
+                        }
+                        className="border p-2 rounded"
+                        placeholder={f}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={updateAddress}
+                    className="mt-3 bg-[#57b957] text-white px-4 py-2 rounded"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              )}
+
+              {showNewAddress && (
+                <div className="mt-4 grid sm:grid-cols-2 gap-3">
+                  {Object.keys(newAddress).map(f => (
+                    <input
+                      key={f}
+                      value={newAddress[f]}
+                      onChange={e =>
+                        setNewAddress({ ...newAddress, [f]: e.target.value })
+                      }
+                      className="border p-2 rounded"
+                      placeholder={f}
+                    />
+                  ))}
+                  <button
+                    onClick={saveNewAddress}
+                    className="sm:col-span-2 bg-[#57b957] text-white py-2 rounded"
+                  >
+                    Save Address
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* ADD NEW ADDRESS */}
-          <button
-            onClick={() => {
-              setShowNewAddress(true);
-              setEditingAddressId(null);
-            }}
-            className="text-[#57b957] font-semibold mt-3"
-          >
-            + Add New Address
-          </button>
+          {/* RIGHT */}
+          <div className="bg-white rounded-xl shadow p-5 h-fit border border-[#57b957]">
+            <h2 className="font-semibold mb-4">Order Summary</h2>
 
-          {showNewAddress && (
-            <div className="mt-3">
-              {Object.keys(newAddress).map((f) => (
-                <input
-                  key={f}
-                  value={newAddress[f]}
-                  onChange={(e) =>
-                    setNewAddress({ ...newAddress, [f]: e.target.value })
-                  }
-                  className="w-full border p-2 mb-2"
-                  placeholder={f}
-                />
-              ))}
-              <button
-                onClick={saveNewAddress}
-                className="bg-[#57b957] text-white px-4 py-2 rounded"
-              >
-                Save Address
-              </button>
+            {cartItems.map(item => (
+              <div key={item.product._id} className="flex justify-between text-sm">
+                <span>{item.product.name} × {item.quantity}</span>
+                <span>₹{(item.product.offerPrice ?? item.product.price) * item.quantity}</span>
+              </div>
+            ))}
+
+            <div className="border-t mt-4 pt-4 flex justify-between font-semibold">
+              <span>Total</span>
+              <span className="text-[#57b957]">₹{total}</span>
             </div>
-          )}
+
+            <button
+              onClick={placeOrder}
+              className="mt-5 w-full bg-[#57b957] text-white py-3 rounded-lg font-semibold"
+            >
+              {paymentMethod === "COD" ? "Place Order (COD)" : "Pay & Place Order"}
+            </button>
+          </div>
         </div>
-
-        <button
-          onClick={placeOrder}
-          className="w-full bg-[#57b957] text-white py-3 rounded font-semibold"
-        >
-          Place Order
-        </button>
       </div>
 
       <Footer />
