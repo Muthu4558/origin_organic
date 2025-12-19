@@ -70,14 +70,14 @@ const ProductCard = ({ product }) => {
 
           {/* Right-top action icons (compact) */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
-            <button
+            {/* <button
               onClick={() => setLiked((v) => !v)}
               aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
               className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm shadow transition transform ${liked ? "bg-[#ffeef0] text-[#c02626]" : "bg-white/90 text-gray-700"} hover:scale-105`}
               title={liked ? "Wishlisted" : "Add to wishlist"}
             >
               <FaHeart />
-            </button>
+            </button> */}
 
             <button
               onClick={() => navigate(`/products/${product?._id}`)}
@@ -145,7 +145,7 @@ const ProductCard = ({ product }) => {
               <motion.button
                 onClick={handleAddToCart}
                 whileTap={{ scale: 0.96 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow bg-gradient-to-r from-[#4aa649] to-[#71ce6e]"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow bg-gradient-to-r from-[#4aa649] to-[#71ce6e] cursor-pointer"
                 aria-label={`Add ${product?.name} to cart`}
               >
                 <FaShoppingCart />

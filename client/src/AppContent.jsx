@@ -21,6 +21,7 @@ import Checkout from "./page/Checkout";
 import Order from "./page/Order";
 import AdminOrders from "./page/AdminOrders";
 import OrderDetails from "./page/OrderDetails";
+import DiabeticsMix from "./page/Diabetics-mix";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -44,6 +45,7 @@ const AppContent = () => {
                 <Route path="/products/masala" element={<Masala />} />
                 <Route path="/products/nuts" element={<Nuts />} />
                 <Route path="/products/oils" element={<Oils />} />
+                <Route path="/products/diabetics-mix" element={<DiabeticsMix />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order/:id" element={<OrderDetails />} />

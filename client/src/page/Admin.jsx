@@ -197,7 +197,7 @@ const Admin = () => {
       );
     });
 
-  const categories = ["All", "Masala Items", "Milk Products", "Nuts", 'Oils'];
+  const categories = ["All", "Masala Items", "Milk Products", "Nuts", 'Oils', 'Diabetics Mix'];
 
   return (
     <>
@@ -327,7 +327,7 @@ const Admin = () => {
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-gray-400 line-through">{product.price ? `₹${product.price}` : "-"}</div>
-                      <div className="text-lg font-bold text-[#6c845d]">{product.offerPrice ? `₹${product.offerPrice}` : product.price ? `₹${product.price}` : "-"}</div>
+                      <div className="text-lg font-bold text-[#57b957]">{product.offerPrice ? `₹${product.offerPrice}` : product.price ? `₹${product.price}` : "-"}</div>
                     </div>
                   </div>
 
@@ -439,6 +439,7 @@ const Admin = () => {
                   <option>Milk Products</option>
                   <option>Nuts</option>
                   <option>Oils</option>
+                  <option>Diabetics Mix</option>
                 </select>
 
                 <textarea
@@ -506,7 +507,7 @@ const Admin = () => {
                       </button>
                       <button
                         type="submit"
-                        className="inline-flex items-center gap-2 bg-[#57b957] text-white px-4 py-2 rounded-lg w-full sm:w-auto justify-center"
+                        className="inline-flex items-center gap-2 bg-[#57b957] text-white px-4 py-2 rounded-lg w-full sm:w-auto justify-center cursor-pointer"
                       >
                         <FaCloudUploadAlt /> {editingProductId ? "Update Product" : "Add Product"}
                       </button>

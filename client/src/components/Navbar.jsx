@@ -120,6 +120,7 @@ const Navbar = () => {
                       ["Milk Products", "/products/milk"],
                       ["Nuts", "/products/nuts"],
                       ["Oils", "/products/oils"],
+                      ["Diabetics Mix", "/products/diabetics-mix"],
                     ].map(([label, path]) => (
                       <li key={path}>
                         <Link
@@ -226,6 +227,7 @@ const Navbar = () => {
                           ["Milk Products", "/products/milk"],
                           ["Nuts", "/products/nuts"],
                           ["Oils", "/products/oils"],
+                          ["Diabetics Mix", "/products/diabetics-mix"],
                         ].map(([label, path]) => (
                           <li key={path}>
                             <Link

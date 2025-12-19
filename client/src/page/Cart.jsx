@@ -49,14 +49,17 @@ const ConfirmDeleteModal = ({ open, productName, onCancel, onConfirm }) => {
 const EmptyState = () => (
   <div className="text-center py-20">
     <div className="mx-auto w-48">
-      <img
+      {/* <img
         src="https://cdni.iconscout.com/illustration/premium/thumb/empty-cart-4085814-3371650.png"
         alt="Empty cart"
         className="w-full"
-      />
+      /> */}
     </div>
     <h3 className="mt-6 text-2xl font-semibold text-gray-700">Your cart is empty</h3>
     <p className="mt-2 text-gray-500">Browse products and add your favourites to the cart.</p>
+    <a href="/products/all-products" className="mt-4 inline-block px-4 py-2 bg-[#57b957] text-white rounded-lg">
+      Continue Shopping
+    </a>
   </div>
 );
 

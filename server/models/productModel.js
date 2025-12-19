@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  category: { type: String, enum: ['Masala Items', 'Milk Products', 'Nuts', 'Oils'], required: true },
+  category: { type: String, enum: ['Masala Items', 'Milk Products', 'Nuts', 'Oils', 'Diabetics Mix'], required: true },
   price: { type: Number, required: true },
   offerPrice: { type: Number },
   description: { type: String, required: true },
