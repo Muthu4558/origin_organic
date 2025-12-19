@@ -48,6 +48,7 @@ const Admin = () => {
   const [showModal, setShowModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const { loading, startLoading, stopLoading } = useLoading();
+  const isKgCategory = ['Masala Items', 'Nuts', 'Diabetics Mix'].includes(formData.category);
 
   // toolbar state
   const [q, setQ] = useState("");
@@ -399,13 +400,27 @@ const Admin = () => {
                     required
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
                   />
-                  <input
+                  {/* <input
                     name="brand"
                     value={formData.brand}
                     onChange={handleChange}
                     placeholder="Brand"
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
-                  />
+                  /> */}
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border rounded-xl"
+                  >
+                    <option value="">Select Category</option>
+                    <option>Masala Items</option>
+                    <option>Milk Products</option>
+                    <option>Nuts</option>
+                    <option>Oils</option>
+                    <option>Diabetics Mix</option>
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -414,33 +429,20 @@ const Admin = () => {
                     type="number"
                     value={formData.price}
                     onChange={handleChange}
-                    placeholder="Price (₹)"
+                    placeholder={`Price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`}
                     required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
+                    className="w-full px-4 py-3 border rounded-xl"
                   />
+
                   <input
                     name="offerPrice"
                     type="number"
                     value={formData.offerPrice}
                     onChange={handleChange}
-                    placeholder="Offer price (₹)"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
+                    placeholder={`Offer price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`}
+                    className="w-full px-4 py-3 border rounded-xl"
                   />
                 </div>
-
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
-                >
-                  <option>Select</option>
-                  <option>Masala Items</option>
-                  <option>Milk Products</option>
-                  <option>Nuts</option>
-                  <option>Oils</option>
-                  <option>Diabetics Mix</option>
-                </select>
 
                 <textarea
                   name="description"

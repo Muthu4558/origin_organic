@@ -10,15 +10,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useLoading } from "../context/LoadingContext";
 
-/**
- * ProductDetail — polished, accessible, responsive UI
- *
- * Notes:
- * - Assumes addToCart(product, { quantity }) returns a Promise that resolves after server confirms.
- * - Keeps a local isAdding state to disable actions while in-flight.
- */
-
 const BRAND = "#57b957";
+
+const resolveUnit = (product) => {
+  if (product?.unit) return product.unit;
+
+  if (["Masala Items", "Nuts", "Diabetics Mix"].includes(product?.category)) {
+    return "kg";
+  }
+
+  return "litre";
+};
 
 const Skeleton = () => (
   <div className="animate-pulse">
@@ -173,6 +175,7 @@ const ProductDetail = () => {
   const offerPrice = product.offerPrice ? Number(product.offerPrice) : null;
   const discountPercent = offerPrice ? Math.round(((price - offerPrice) / price) * 100) : 0;
   const rating = Math.max(0, Math.min(5, Number(product.rating ?? 4.3)));
+  const unit = resolveUnit(product);
 
   return (
     <>
@@ -279,8 +282,18 @@ const ProductDetail = () => {
                   <div className="flex-shrink-0 text-right">
                     {offerPrice ? (
                       <>
-                        <div className="text-2xl sm:text-3xl font-bold text-[#57b957]">₹{offerPrice.toLocaleString()}</div>
-                        <div className="text-sm text-gray-400 line-through">₹{price.toLocaleString()}</div>
+                        {/* OFFER PRICE */}
+                        <div className="text-2xl sm:text-3xl font-bold text-[#57b957]">
+                          ₹{offerPrice.toLocaleString()}
+                          <span className="text-sm text-gray-500"> / {unit}</span>
+                        </div>
+
+                        {/* ORIGINAL PRICE */}
+                        <div className="text-sm text-gray-400 line-through">
+                          ₹{price.toLocaleString()}
+                          <span className="text-xs text-gray-400"> / {unit}</span>
+                        </div>
+
                         <div className="mt-2 inline-flex items-center gap-2 bg-[#eaf6ee] text-[#0f7a39] px-3 py-1 rounded-full text-xs font-semibold">
                           {discountPercent}% OFF
                         </div>
@@ -320,10 +333,6 @@ const ProductDetail = () => {
                   <div className="bg-[#fbfdfb] p-3 rounded-md">
                     <div className="text-xs text-gray-500">Brand</div>
                     <div className="font-medium text-gray-800">{product.brand ?? "-"}</div>
-                  </div>
-                  <div className="bg-[#fbfdfb] p-3 rounded-md">
-                    <div className="text-xs text-gray-500">SKU</div>
-                    <div className="font-medium text-gray-800">{String(product._id ?? "").slice(-8).toUpperCase()}</div>
                   </div>
                 </div>
 
@@ -401,14 +410,14 @@ const ProductDetail = () => {
                                 <li>Brand: {product.brand ?? "N/A"}</li>
                               </ul>
                             </div>
-                            <div>
+                            {/* <div>
                               <h4 className="font-semibold mb-2">Details</h4>
                               <ul className="list-disc list-inside space-y-1">
                                 <li>SKU: {String(product._id ?? "").slice(-8).toUpperCase()}</li>
                                 <li>Weight: {product.weight ?? "N/A"}</li>
                                 <li>Dimensions: {product.dimensions ?? "N/A"}</li>
                               </ul>
-                            </div>
+                            </div> */}
                           </div>
                         </motion.div>
                       )}
@@ -431,8 +440,8 @@ const ProductDetail = () => {
                         <motion.div key="shipping" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
                           <div className="text-sm text-gray-700">
                             <p className="mb-2">Standard shipping: 3–7 business days.</p>
-                            <p className="mb-2">Express shipping: 1–2 business days (where available).</p>
-                            <p className="mb-0">Free returns within 15 days of delivery.</p>
+                            {/* <p className="mb-2">Express shipping: 1–2 business days (where available).</p>
+                            <p className="mb-0">Free returns within 15 days of delivery.</p> */}
                           </div>
                         </motion.div>
                       )}

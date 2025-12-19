@@ -2,8 +2,24 @@ import Product from '../models/productModel.js';
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, offerPrice, description, stock, brand, category, featured } = req.body;
+    const {
+      name,
+      price,
+      offerPrice,
+      description,
+      stock,
+      brand,
+      category,
+      featured
+    } = req.body;
+
     const image = req.file?.filename;
+
+    // 🔹 Unit logic
+    const unit =
+      ['Masala Items', 'Nuts', 'Diabetics Mix'].includes(category)
+        ? 'kg'
+        : 'litre';
 
     const product = await Product.create({
       name,
@@ -13,8 +29,9 @@ export const createProduct = async (req, res) => {
       stock,
       brand,
       category,
+      unit,
       image,
-      featured: featured === 'true',
+      featured: featured === 'true'
     });
 
     res.status(201).json(product);
@@ -53,22 +70,37 @@ export const getAllProducts = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, offerPrice, category, featured } = req.body;
+    const { name, price, offerPrice, category, featured, stock } = req.body;
+
+    const unit =
+      ['Masala Items', 'Nuts', 'Diabetics Mix'].includes(category)
+        ? 'kg'
+        : 'litre';
+
     const updateData = {
       name,
       price,
       offerPrice,
       category,
-      featured: featured === 'true',
+      unit,
+      stock,
+      featured: featured === 'true'
     };
+
     if (req.file) updateData.image = req.file.filename;
 
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
     res.json(updatedProduct);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 export const deleteProduct = async (req, res) => {
   try {
