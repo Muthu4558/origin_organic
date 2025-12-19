@@ -62,6 +62,18 @@ const Checkout = () => {
     }, 0);
   }, [cartItems]);
 
+  const estimatedDeliveryDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }, []);
+
+
   /* ---------- ADDRESS APIs ---------- */
   const saveNewAddress = async () => {
     try {
@@ -297,7 +309,9 @@ const Checkout = () => {
 
             <div className="flex items-center justify-between text-sm text-gray-600 mt-4">
               <span>Estimated delivery</span>
-              <span>5–7 days</span>
+              <span className="font-medium text-gray-800">
+                {estimatedDeliveryDate}
+              </span>
             </div>
 
             <button
