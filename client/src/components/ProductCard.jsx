@@ -57,7 +57,7 @@ const ProductCard = ({ product }) => {
       transition={{ duration: 0.25 }}
     >
       {/* CARD */}
-      <div className="relative h-full rounded-2xl bg-white overflow-hidden p-1 flex flex-col shadow hover:shadow-lg transition">
+      <div className="relative h-full rounded-2xl bg-white overflow-hidden p-1 flex flex-col transition">
         {/* IMAGE */}
         <div className="relative">
           <motion.img
