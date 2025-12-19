@@ -332,6 +332,19 @@ const Admin = () => {
                     </div>
                   </div>
 
+                  <div className="mt-2 text-sm">
+                    {product.stock > 0 ? (
+                      <span className="text-green-600 font-medium">
+                        Stock: {product.stock}
+                      </span>
+                    ) : (
+                      <span className="text-red-600 font-semibold">
+                        Out of Stock
+                      </span>
+                    )}
+                  </div>
+
+
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="text-sm text-gray-500">{product.brand || "-"}</div>
                     <div className="flex items-center gap-2">
@@ -400,13 +413,13 @@ const Admin = () => {
                     required
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
                   />
-                  {/* <input
+                  <input
                     name="brand"
                     value={formData.brand}
                     onChange={handleChange}
                     placeholder="Brand"
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
-                  /> */}
+                  />
                   <select
                     name="category"
                     value={formData.category}
@@ -421,9 +434,6 @@ const Admin = () => {
                     <option>Oils</option>
                     <option>Diabetics Mix</option>
                   </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <input
                     name="price"
                     type="number"

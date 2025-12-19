@@ -4,8 +4,6 @@ import { motion } from "framer-motion";
 import { FaShoppingCart, FaEye, FaStar } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 
-const BRAND = "#6c845d";
-
 /* ✅ SAFE unit resolver (keeps old products working) */
 const resolveUnit = (product) => {
   if (product?.unit) return product.unit;
@@ -22,22 +20,29 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const [justAdded, setJustAdded] = useState(false);
 
+  /* ----------------- BASIC DATA ----------------- */
   const imageUrl = product?.image
     ? `${import.meta.env.VITE_APP_BASE_URL}/uploads/${product.image}`
     : "/placeholder-product.png";
 
-  const msrp = product?.price ?? null;
+  const msrp = product?.price ?? 0;
   const price = product?.offerPrice ?? product?.price ?? 0;
+  const rating = Math.max(0, Math.min(5, product?.rating ?? 4));
+  const unit = resolveUnit(product);
 
   const discount =
     msrp && msrp > price
       ? Math.round(((msrp - price) / msrp) * 100)
       : 0;
 
-  const rating = Math.max(0, Math.min(5, product?.rating ?? 4));
-  const unit = resolveUnit(product);
+  /* ----------------- STOCK LOGIC ----------------- */
+  const stock = product?.stock ?? 0;
+  const isOutOfStock = stock <= 0;
 
+  /* ----------------- HANDLERS ----------------- */
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
+
     addToCart(product);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
@@ -49,10 +54,10 @@ const ProductCard = ({ product }) => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ translateY: -2 }}
-      transition={{ duration: 0.28 }}
+      transition={{ duration: 0.25 }}
     >
       {/* CARD */}
-      <div className="relative h-full rounded-2xl bg-white overflow-hidden p-1 flex flex-col transition">
+      <div className="relative h-full rounded-2xl bg-white overflow-hidden p-1 flex flex-col shadow hover:shadow-lg transition">
         {/* IMAGE */}
         <div className="relative">
           <motion.img
@@ -61,15 +66,26 @@ const ProductCard = ({ product }) => {
             loading="lazy"
             className="w-full h-64 object-cover rounded-2xl"
             whileHover={{ scale: 1.03 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           />
 
-          {discount > 0 && (
+          {/* DISCOUNT BADGE */}
+          {discount > 0 && !isOutOfStock && (
             <span className="absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full text-white bg-gradient-to-r from-[#4aa649] to-[#71ce6e] shadow">
               {discount}% OFF
             </span>
           )}
 
+          {/* OUT OF STOCK OVERLAY */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-2xl">
+              <span className="text-red-600 font-bold text-lg">
+                Out of Stock
+              </span>
+            </div>
+          )}
+
+          {/* VIEW BUTTON */}
           <button
             onClick={() => navigate(`/products/${product?._id}`)}
             className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-white/90 shadow flex items-center justify-center hover:scale-105 transition"
@@ -80,6 +96,7 @@ const ProductCard = ({ product }) => {
 
         {/* CONTENT */}
         <div className="p-4 flex flex-col flex-1">
+          {/* NAME */}
           <h3
             className="text-lg font-semibold truncate"
             title={product?.name}
@@ -102,11 +119,24 @@ const ProductCard = ({ product }) => {
             {product?.description}
           </p>
 
-          {/* PRICE + ACTIONS (ALWAYS AT BOTTOM) */}
+          {/* STOCK INFO */}
+          <div className="mt-2 text-sm">
+            {isOutOfStock ? (
+              <span className="text-red-600 font-semibold">
+                Out of Stock
+              </span>
+            ) : (
+              <span className="text-green-600">
+                Available: {stock}
+              </span>
+            )}
+          </div>
+
+          {/* PRICE + ACTIONS */}
           <div className="mt-auto pt-4 flex items-center justify-between gap-3">
             {/* PRICE */}
             <div>
-              {msrp && msrp > price ? (
+              {msrp > price ? (
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm text-gray-400 line-through">
                     ₹{msrp}
@@ -128,15 +158,22 @@ const ProductCard = ({ product }) => {
               )}
             </div>
 
-            {/* ACTIONS */}
+            {/* ACTION BUTTONS */}
             <div className="flex items-center gap-2">
               <motion.button
                 onClick={handleAddToCart}
-                whileTap={{ scale: 0.96 }}
-                className="relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow bg-gradient-to-r from-[#4aa649] to-[#71ce6e]"
+                disabled={isOutOfStock}
+                whileTap={{ scale: isOutOfStock ? 1 : 0.96 }}
+                className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow
+                  ${isOutOfStock
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-[#4aa649] to-[#71ce6e]"
+                  }`}
               >
                 <FaShoppingCart />
-                <span className="hidden sm:inline">Add</span>
+                <span className="hidden sm:inline">
+                  {isOutOfStock ? "Unavailable" : "Add"}
+                </span>
 
                 {justAdded && (
                   <motion.span
