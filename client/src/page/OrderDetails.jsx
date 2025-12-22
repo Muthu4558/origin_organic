@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { FaBoxOpen, FaTruck, FaCheckCircle } from "react-icons/fa";
 import { MdArrowRightAlt, MdDashboard, MdRateReview } from "react-icons/md";
+import { motion } from "framer-motion";
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -67,97 +68,96 @@ const OrderDetails = () => {
         <>
             {!isAdmin && <Navbar />}
 
-            <div className="min-h-screen px-3 sm:px-4 pt-28 pb-12">
+            <div className="min-h-screen px-4 sm:px-6 pt-28 pb-12">
                 {/* ADMIN HEADER */}
                 {isAdmin && (
-                    <>
-                        <div className="max-w-4xl mx-auto text-2xl sm:text-4xl font-bold flex items-center gap-3 mb-4">
-                            <MdDashboard />
+                    <div className="max-w-5xl mx-auto mb-6">
+                        <div className="text-3xl font-bold flex items-center gap-3 mb-4 text-gray-800">
+                            <MdDashboard className="text-[#57b957]" />
                             Admin <span className="text-[#57b957]">Dashboard</span>
                         </div>
 
-                        <div className="max-w-4xl mx-auto mb-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
-
-                                <Link
-                                    to="/admin"
-                                    className="text-sm font-medium text-gray-600 hover:text-[#57b957] transition"
-                                >
-                                    Home
-                                </Link>
-
-                                <MdArrowRightAlt className="text-gray-400 text-lg" />
-
-                                <Link
-                                    to="/admin/orders"
-                                    className="text-sm font-semibold text-gray-600 hover:text-[#57b957] transition"
-                                >
-                                    Orders
-                                </Link>
-
-                                <MdArrowRightAlt className="text-gray-400 text-lg" />
-
-                                <Link
-                                    to="/order/{order._id}"
-                                    className="text-sm font-semibold text-[#57b957]"
-                                >
-                                    Order Details
-                                </Link>
-                            </div>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
+                            <Link
+                                to="/admin"
+                                className="text-sm font-medium text-gray-600 hover:text-[#57b957] transition"
+                            >
+                                Home
+                            </Link>
+                            <MdArrowRightAlt className="text-gray-400 text-lg" />
+                            <Link
+                                to="/admin/orders"
+                                className="text-sm font-semibold text-gray-600 hover:text-[#57b957] transition"
+                            >
+                                Orders
+                            </Link>
+                            <MdArrowRightAlt className="text-gray-400 text-lg" />
+                            <span className="text-sm font-semibold text-[#57b957]">
+                                Order Details
+                            </span>
                         </div>
-                    </>
+                    </div>
                 )}
 
                 {/* CONTENT */}
-                <div className="max-w-4xl mx-auto">
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-gray-800">
+                <div className="max-w-5xl mx-auto">
+                    <h1 className="text-3xl sm:text-4xl font-bold mb-10 text-gray-800 text-center">
                         Order <span className="text-[#57b957]">Tracking</span>
                     </h1>
 
                     {/* TIMELINE CARD */}
-                    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-10 border border-green-200">
+                    <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-green-200 relative overflow-hidden">
+                        {/* Decorative gradient */}
+                        <div className="absolute -top-10 -right-10 w-72 h-72 bg-gradient-to-r from-[#57b957]/30 to-[#57b957]/10 rounded-full blur-3xl"></div>
+
                         <div className="relative">
                             {/* LINE */}
-                            <div className="absolute left-5 top-0 h-full w-0.5 bg-gray-200" />
+                            <div className="absolute left-5 top-0 h-full w-1 bg-gray-200 rounded"></div>
 
                             {/* STEPS */}
-                            <div className="space-y-8 sm:space-y-10">
-                                {steps.map((step) => {
+                            <div className="space-y-12 sm:space-y-14">
+                                {steps.map((step, idx) => {
                                     const active = timeline?.[step.key]?.status;
-
                                     return (
-                                        <div key={step.key} className="flex gap-4 sm:gap-6 relative">
+                                        <motion.div
+                                            key={step.key}
+                                            initial={{ opacity: 0, x: -50 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: idx * 0.2 }}
+                                            className="flex gap-6 sm:gap-8 relative"
+                                        >
                                             <div
-                                                className={`z-10 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-white text-sm sm:text-lg
-                        ${active ? "bg-[#57b957]" : "bg-gray-300"}`}
+                                                className={`z-10 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full text-white text-xl sm:text-2xl shadow-md
+                          ${active ? "bg-[#57b957]" : "bg-gray-300"}
+                        `}
                                             >
                                                 {step.icon}
                                             </div>
 
                                             <div className="flex-1">
                                                 <p
-                                                    className={`font-semibold text-base sm:text-lg ${active ? "text-[#57b957]" : "text-gray-500"
+                                                    className={`font-semibold text-lg sm:text-xl mb-1 ${active ? "text-[#57b957]" : "text-gray-500"
                                                         }`}
                                                 >
                                                     {step.title}
                                                 </p>
 
                                                 {timeline?.[step.key]?.date ? (
-                                                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                                                        {new Date(
-                                                            timeline[step.key].date
-                                                        ).toLocaleString("en-GB")}
+                                                    <p className="text-sm sm:text-base text-gray-500">
+                                                        {new Date(timeline[step.key].date).toLocaleString(
+                                                            "en-GB"
+                                                        )}
                                                     </p>
                                                 ) : (
-                                                    <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                                                    <p className="text-sm sm:text-base text-gray-400">
                                                         Pending
                                                     </p>
                                                 )}
 
                                                 {step.key === "delivered" && (
-                                                    <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                                                    <p className="text-sm sm:text-base text-gray-600 mt-2">
                                                         Expected Delivery:{" "}
-                                                        <span className="font-semibold">
+                                                        <span className="font-semibold text-gray-800">
                                                             {new Date(deliveryDateToShow).toLocaleDateString(
                                                                 "en-GB"
                                                             )}
@@ -165,23 +165,26 @@ const OrderDetails = () => {
                                                     </p>
                                                 )}
 
-
-                                                {step.key === "delivered" && timeline.delivered.status && !isAdmin && (
-                                                <div className="mt-3">
-                                                    {order.items.map(item => (
-                                                        <Link
-                                                            key={item.product._id}
-                                                            to={`/products/${item.product._id}?review=true`}
-                                                            className="flex items-center gap-2 text-2xl font-semibold text-[#57b957] underline mt-5"
-                                                        >
-                                                            <span><MdRateReview /></span>Review {item.product.name} 
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                {step.key === "delivered" &&
+                                                    timeline.delivered.status &&
+                                                    !isAdmin && (
+                                                        <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                                                            {order.items.map((item) => (
+                                                                <Link
+                                                                    key={item.product._id}
+                                                                    to={`/products/${item.product._id}?review=true`}
+                                                                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition bg-green-50"
+                                                                >
+                                                                    <MdRateReview className="text-[#57b957] text-lg" />
+                                                                    <span className="font-semibold text-gray-700">
+                                                                        Review {item.product.name}
+                                                                    </span>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                             </div>
-
-                                        </div>
+                                        </motion.div>
                                     );
                                 })}
                             </div>
@@ -189,7 +192,7 @@ const OrderDetails = () => {
 
                         {/* ADMIN ACTIONS */}
                         {isAdmin && (
-                            <div className="mt-8 pt-6 border-t space-y-4">
+                            <div className="mt-10 pt-6 border-t border-gray-200 space-y-6">
                                 {!timeline.dispatched.status && (
                                     <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                                         <div>
@@ -200,28 +203,27 @@ const OrderDetails = () => {
                                                 type="date"
                                                 value={deliveryDate}
                                                 onChange={(e) => setDeliveryDate(e.target.value)}
-                                                className="border rounded px-3 py-2 w-full max-w-xs"
+                                                className="border rounded-lg px-4 py-2 w-full max-w-xs shadow-sm focus:ring-2 focus:ring-green-300"
                                             />
                                         </div>
 
                                         <button
                                             onClick={() => updateStatus("DISPATCHED")}
-                                            className="px-6 py-2 rounded-lg bg-[#57b957] text-white font-semibold w-full sm:w-auto"
+                                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#57b957] to-green-400 text-white font-semibold shadow hover:shadow-lg transition w-full sm:w-auto cursor-pointer"
                                         >
                                             Mark as Dispatched
                                         </button>
                                     </div>
                                 )}
 
-                                {timeline.dispatched.status &&
-                                    !timeline.delivered.status && (
-                                        <button
-                                            onClick={() => updateStatus("DELIVERED")}
-                                            className="px-6 py-2 rounded-lg bg-[#57b957] text-white font-semibold w-full sm:w-auto"
-                                        >
-                                            Mark as Delivered
-                                        </button>
-                                    )}
+                                {timeline.dispatched.status && !timeline.delivered.status && (
+                                    <button
+                                        onClick={() => updateStatus("DELIVERED")}
+                                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#57b957] to-green-400 text-white font-semibold shadow hover:shadow-lg transition w-full sm:w-auto"
+                                    >
+                                        Mark as Delivered
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

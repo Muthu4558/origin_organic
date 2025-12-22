@@ -29,13 +29,13 @@ const ConfirmDeleteModal = ({ open, productName, onCancel, onConfirm }) => {
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+            className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded-lg text-white"
+            className="px-4 py-2 rounded-lg text-white cursor-pointer"
             style={{ background: BRAND }}
           >
             Yes, remove
@@ -222,7 +222,7 @@ const Cart = () => {
 
                         {/* Remove */}
                         <button
-                          className="p-2 rounded-lg bg-white border hover:bg-red-50 text-red-600"
+                          className="p-2 rounded-lg bg-white border hover:bg-red-50 text-red-600 cursor-pointer"
                           title="Remove"
                           onClick={() => askDelete(item.product._id, item.product.name)}
                           aria-label="Remove item"
