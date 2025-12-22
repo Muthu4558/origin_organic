@@ -534,6 +534,7 @@ const ProductDetail = () => {
                         <FaBolt className="text-yellow-500" />
                         <span>{isAdding ? "Processing…" : "Buy now"}</span>
                       </button>
+                      
                     </div>
                   </div>
                 </div>
