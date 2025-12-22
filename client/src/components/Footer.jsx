@@ -3,6 +3,7 @@ import {
   FaInstagram,
   FaLinkedin,
   FaGlobe,
+  FaPhoneAlt,
 } from "react-icons/fa";
 import { FiMail } from "react-icons/fi";
 import Logo from "../assets/logo.png";
@@ -32,6 +33,7 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <h3 className="text-lg font-semibold mb-3 text-[#57b957]">Shop</h3>
             <ul className="space-y-2 text-gray-400 text-center md:text-left">
+              <li><a href="/products/diabetics-mix" className="hover:text-[#57b957] transition">Diabetics Mix</a></li>
               <li><a href="/products/oils" className="hover:text-[#57b957] transition">Oils</a></li>
               <li><a href="/products/masala" className="hover:text-[#57b957] transition">Masala & Spices</a></li>
               <li><a href="/products/nuts" className="hover:text-[#57b957] transition">Nuts & Dry Fruits</a></li>
@@ -46,9 +48,10 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-400 text-center md:text-left">
               <li><a href="/profile" className="hover:text-[#57b957] transition">My Account</a></li>
               <li><a href="/cart" className="hover:text-[#57b957] transition">Cart</a></li>
-              <li><a href="/orders" className="hover:text-[#57b957] transition">Orders</a></li>
-              <li><a href="/refund" className="hover:text-[#57b957] transition">Refund Policy</a></li>
+              <li><a href="/order" className="hover:text-[#57b957] transition">Orders</a></li>
+              <li><a href="/shipping" className="hover:text-[#57b957] transition">Shipping Policy</a></li>
               <li><a href="/privacy" className="hover:text-[#57b957] transition">Privacy Policy</a></li>
+              <li><a href="/terms" className="hover:text-[#57b957] transition">Terms & Conditions</a></li>
             </ul>
           </div>
 
@@ -57,6 +60,24 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-3 text-[#57b957]">
               Contact Us
             </h3>
+
+            <p className="text-gray-400">
+              <span>MAM Nagar,</span>
+              <br />
+              <span>Trichy - Chennai Trunk Road,</span>
+              <br />
+              <span>Siruganur, Trichy - 600 018,</span>
+            </p>
+            <p className="text-gray-400 mt-2 mb-2 flex items-center gap-2">
+              <FaPhoneAlt className="text-[#57b957]" />
+              <a
+                href="tel:+917305092313"
+                className="hover:text-[#57b957] transition"
+                aria-label="Call Originorganic"
+              >
+                +91 73050 92313
+              </a>
+            </p>
 
             <p className="text-gray-400 mb-2 flex items-center gap-2">
               <FaGlobe className="text-[#57b957]" />
@@ -108,7 +129,7 @@ const Footer = () => {
         {/* BOTTOM BAR */}
         <div className="mt-10 border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
           © {new Date().getFullYear()}{" "}
-          <span className="text-[#57b957] font-medium">Origin Organic</span>.  
+          <span className="text-[#57b957] font-medium">Origin Organic</span>.
           All rights reserved.
         </div>
       </div>

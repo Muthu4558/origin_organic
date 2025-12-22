@@ -1,10 +1,30 @@
 // src/components/Hero.jsx
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import heroImg from "../assets/hero.png";
 import { FaInstagram, FaYoutube } from "react-icons/fa";
 
+// Swiper
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+
+// Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
+
+// Images
+import heroImg1 from "../assets/hero.png";
+import heroImg2 from "../assets/hero.png";
+import heroImg3 from "../assets/hero.png";
+
+const slides = [
+  { image: heroImg1, discount: "30% OFF" },
+  { image: heroImg2, discount: "25% OFF" },
+  { image: heroImg3, discount: "40% OFF" },
+];
+
 const HeroExact = () => {
+  const [activeDiscount, setActiveDiscount] = useState(slides[0].discount);
+
   return (
     <section
       id="home"
@@ -23,88 +43,52 @@ const HeroExact = () => {
         />
       </div>
 
-      {/* MAIN CONTENT */}
       <div className="relative z-20 max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 py-12 lg:py-20">
 
-          {/* LEFT SIDE TEXT */}
+          {/* LEFT */}
           <motion.div
             initial={{ opacity: 0, x: -32 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7 }}
             className="w-full lg:w-1/2 text-center lg:text-left"
           >
-            <h1
-              className="text-[44px] md:text-[56px] lg:text-[64px] font-extrabold leading-tight"
-              style={{ color: "#2f5f2f" }} // fixed heading color
-            >
+            <h1 className="text-[44px] md:text-[56px] lg:text-[64px] font-extrabold text-[#2f5f2f]">
               Consume Organic
             </h1>
 
-            <p
-              className="mt-2 text-sm md:text-base font-semibold tracking-wider"
-              style={{ color: "#3b7b3b" }} // subtitle
-            >
+            <p className="mt-2 font-semibold tracking-wider text-[#3b7b3b]">
               FOR HEALTHY LIFE
             </p>
 
-            <p
-              className="mt-6 max-w-lg text-sm md:text-base leading-relaxed mx-auto lg:mx-0"
-              style={{ color: "#3b7b3b" }} // paragraph
-            >
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonummy nibh euismod
-              tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam.
+            <p className="mt-6 max-w-lg mx-auto lg:mx-0 text-[#3b7b3b]">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam
+              nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
             </p>
 
-            {/* CTA BUTTONS */}
-            <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
+            <div className="mt-8 flex gap-4 justify-center lg:justify-start">
               <a
                 href="/products/all-products"
-                className="inline-block px-6 py-3 rounded-full text-lg font-semibold shadow-lg transition"
-                style={{
-                  backgroundColor: "#57b957",
-                  color: "white"
-                }}
+                className="px-6 py-3 rounded-full text-lg font-semibold bg-[#57b957] text-white shadow-lg"
               >
                 Shop Organic Now
               </a>
 
               <a
                 href="/about"
-                className="inline-block border-2 px-6 py-3 rounded-full text-lg font-semibold transition"
-                style={{
-                  borderColor: "#57b957",
-                  color: "#2f5f2f"
-                }}
+                className="px-6 py-3 rounded-full text-lg font-semibold border-2 text-[#2f5f2f]"
+                style={{ borderColor: "#57b957" }}
               >
                 About
               </a>
             </div>
 
-            {/* TRUST BADGES */}
-            <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
-              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#57b957]/10" style={{ color: "#2f5f2f" }}>
-                Farm-fresh
-              </span>
-              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#57b957]/10" style={{ color: "#2f5f2f" }}>
-                Certified Organic
-              </span>
-              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#57b957]/10" style={{ color: "#2f5f2f" }}>
-                No Preservatives
-              </span>
-            </div>
-
-            {/* SOCIAL + WEBSITE */}
-            <div className="mt-10 flex items-center gap-4 justify-center lg:justify-start">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#57b957]/20 flex items-center justify-center text-[#2f5f2f]"><a href="#"><FaInstagram/></a></div>
-                <div className="w-8 h-8 rounded-full bg-[#57b957]/20 flex items-center justify-center text-[#2f5f2f]"><a href="#"><FaYoutube/></a></div>
-                {/* <div className="w-8 h-8 rounded-full bg-[#57b957]/20 flex items-center justify-center text-[#2f5f2f]">yt</div> */}
-              </div>
-
-              <div className="ml-3 text-sm font-medium" style={{ color: "#2f5f2f" }}>
+            <div className="mt-10 flex gap-4 justify-center lg:justify-start">
+              <FaInstagram className="text-[#2f5f2f]" />
+              <FaYoutube className="text-[#2f5f2f]" />
+              <span className="ml-3 text-sm font-medium text-[#2f5f2f]">
                 www.originorganic.in
-              </div>
+              </span>
             </div>
           </motion.div>
 
@@ -115,210 +99,59 @@ const HeroExact = () => {
             transition={{ duration: 0.7, delay: 0.12 }}
             className="w-full lg:w-1/2 flex justify-center lg:justify-end relative"
           >
-            {/* Discount Badge */}
-            <div className="absolute top-16 left-8 md:left-30 z-30">
-              <div
-                className="px-5 py-3 rounded-full shadow-lg text-sm md:text-lg font-extrabold"
-                style={{ backgroundColor: "#57b957", color: "#fff" }}
-              >
-                30% OFF
-              </div>
-            </div>
+            {/* Dynamic Discount Badge */}
+            <motion.div
+              key={activeDiscount}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="absolute top-16 left-8 z-30 px-5 py-3 rounded-full shadow-lg font-extrabold bg-[#57b957] text-white"
+            >
+              {activeDiscount}
+            </motion.div>
 
-            {/* IMAGE CARD */}
+            {/* Swiper */}
             <div className="relative overflow-hidden rounded-2xl w-[300px] h-[220px] md:w-[420px] md:h-[300px] lg:w-[520px] lg:h-[360px]">
-              <img src={heroImg} alt="organic produce" className="w-full h-full object-cover" />
+              <Swiper
+                modules={[Pagination, Autoplay]}
+                pagination={{ clickable: true }}
+                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                loop
+                onSlideChange={(swiper) =>
+                  setActiveDiscount(slides[swiper.realIndex].discount)
+                }
+                className="hero-swiper w-full h-full"
+              >
+                {slides.map((slide, index) => (
+                  <SwiperSlide key={index}>
+                    <img
+                      src={slide.image}
+                      alt="Organic products"
+                      className="w-full h-full object-cover"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
           </motion.div>
 
         </div>
       </div>
+
+      {/* Pagination Styling */}
+      <style>
+        {`
+          .hero-swiper .swiper-pagination-bullet {
+            background: #57b957;
+            opacity: 0.4;
+          }
+          .hero-swiper .swiper-pagination-bullet-active {
+            opacity: 1;
+          }
+        `}
+      </style>
     </section>
   );
 };
 
 export default HeroExact;
-
-
-// import React from "react";
-// import { motion } from "framer-motion";
-// import heroImg from "../assets/hero.png";
-// import { FaInstagram, FaYoutube } from "react-icons/fa";
-
-// const HeroExact = () => {
-//   return (
-//     <section
-//       id="home"
-//       className="relative min-h-[82vh] overflow-hidden py-12"
-//       style={{ backgroundColor: "#98B9A8" }}
-//     >
-//       {/* Decorative Shapes */}
-//       <div className="absolute inset-0 pointer-events-none">
-//         <div
-//           className="absolute -left-10 -top-16 w-[520px] h-[260px] md:w-[760px] md:h-[360px] rounded-br-[160px]"
-//           style={{
-//             backgroundColor: "#1F6A46",
-//             opacity: 0.9,
-//             transform: "rotate(-1deg)",
-//           }}
-//         />
-//         <div
-//           className="absolute -right-20 bottom-0 w-[640px] h-[420px] md:w-[920px] md:h-[520px] rounded-tl-[220px]"
-//           style={{
-//             backgroundColor: "#4B886E",
-//             opacity: 0.95,
-//             transform: "rotate(6deg)",
-//           }}
-//         />
-//       </div>
-
-//       {/* MAIN CONTENT */}
-//       <div className="relative z-20 max-w-7xl mx-auto px-6 lg:px-12">
-//         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 py-12 lg:py-20">
-
-//           {/* LEFT CONTENT */}
-//           <motion.div
-//             initial={{ opacity: 0, x: -32 }}
-//             animate={{ opacity: 1, x: 0 }}
-//             transition={{ duration: 0.7 }}
-//             className="w-full lg:w-1/2 text-center lg:text-left"
-//           >
-//             {/* Heading */}
-//             <h1
-//               className="text-[44px] md:text-[56px] lg:text-[64px] font-extrabold leading-tight"
-//               style={{ color: "#1F3D2B" }}
-//             >
-//               Consume Organic
-//             </h1>
-
-//             {/* Subtitle */}
-//             <p
-//               className="mt-2 text-sm md:text-base font-semibold tracking-wider"
-//               style={{ color: "#2F5F4A" }}
-//             >
-//               FOR HEALTHY LIFE
-//             </p>
-
-//             {/* Paragraph */}
-//             <p
-//               className="mt-6 max-w-lg text-sm md:text-base leading-relaxed mx-auto lg:mx-0"
-//               style={{ color: "#355F52" }}
-//             >
-//               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam
-//               nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
-//               erat volutpat. Ut wisi enim ad minim veniam.
-//             </p>
-
-//             {/* CTA Buttons */}
-//             <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
-//               <a
-//                 href="/products/all-products"
-//                 className="inline-block px-6 py-3 rounded-full text-lg font-semibold shadow-lg transition"
-//                 style={{
-//                   backgroundColor: "#2E8B57",
-//                   color: "#FFFFFF",
-//                 }}
-//               >
-//                 Shop Organic Now
-//               </a>
-
-//               <a
-//                 href="/about"
-//                 className="inline-block border-2 px-6 py-3 rounded-full text-lg font-semibold transition"
-//                 style={{
-//                   borderColor: "#2E8B57",
-//                   color: "#1F3D2B",
-//                 }}
-//               >
-//                 About
-//               </a>
-//             </div>
-
-//             {/* Trust Badges */}
-//             <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
-//               {["Farm-fresh", "Certified Organic", "No Preservatives"].map(
-//                 (item) => (
-//                   <span
-//                     key={item}
-//                     className="px-3 py-1 rounded-full text-sm font-semibold"
-//                     style={{
-//                       backgroundColor: "rgba(46,139,87,0.15)",
-//                       color: "#1F3D2B",
-//                     }}
-//                   >
-//                     {item}
-//                   </span>
-//                 )
-//               )}
-//             </div>
-
-//             {/* Social + Website */}
-//             <div className="mt-10 flex items-center gap-4 justify-center lg:justify-start">
-//               <div className="flex items-center gap-3">
-//                 <a
-//                   href="#"
-//                   className="w-8 h-8 rounded-full flex items-center justify-center"
-//                   style={{
-//                     backgroundColor: "rgba(46,139,87,0.2)",
-//                     color: "#1F3D2B",
-//                   }}
-//                 >
-//                   <FaInstagram />
-//                 </a>
-//                 <a
-//                   href="#"
-//                   className="w-8 h-8 rounded-full flex items-center justify-center"
-//                   style={{
-//                     backgroundColor: "rgba(46,139,87,0.2)",
-//                     color: "#1F3D2B",
-//                   }}
-//                 >
-//                   <FaYoutube />
-//                 </a>
-//               </div>
-
-//               <div
-//                 className="ml-3 text-sm font-medium"
-//                 style={{ color: "#1F3D2B" }}
-//               >
-//                 www.originorganic.in
-//               </div>
-//             </div>
-//           </motion.div>
-
-//           {/* RIGHT IMAGE */}
-//           <motion.div
-//             initial={{ opacity: 0, scale: 0.96 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             transition={{ duration: 0.7, delay: 0.12 }}
-//             className="w-full lg:w-1/2 flex justify-center lg:justify-end relative"
-//           >
-//             {/* Discount Badge */}
-//             <div className="absolute top-16 left-8 z-30">
-//               <div
-//                 className="px-5 py-3 rounded-full shadow-lg text-sm md:text-lg font-extrabold"
-//                 style={{
-//                   backgroundColor: "#2E8B57",
-//                   color: "#FFFFFF",
-//                 }}
-//               >
-//                 30% OFF
-//               </div>
-//             </div>
-
-//             {/* Image */}
-//             <div className="relative overflow-hidden rounded-2xl w-[300px] h-[220px] md:w-[420px] md:h-[300px] lg:w-[520px] lg:h-[360px]">
-//               <img
-//                 src={heroImg}
-//                 alt="organic produce"
-//                 className="w-full h-full object-cover"
-//               />
-//             </div>
-//           </motion.div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default HeroExact;

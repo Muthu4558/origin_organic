@@ -221,7 +221,7 @@ const Checkout = () => {
                         setShowNewAddress(false);
                         setNewAddress(emptyAddress);
                       }}
-                      className="text-gray-500 hover:text-red-500"
+                      className="text-gray-500 hover:text-red-500 cursor-pointer"
                     >
                       <MdClose size={22} />
                     </button>
@@ -243,7 +243,7 @@ const Checkout = () => {
 
                   <button
                     onClick={saveNewAddress}
-                    className="mt-5 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
+                    className="mt-5 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold cursor-pointer"
                   >
                     Save Address
                   </button>

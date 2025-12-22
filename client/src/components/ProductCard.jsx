@@ -88,7 +88,7 @@ const ProductCard = ({ product }) => {
           {/* VIEW BUTTON */}
           <button
             onClick={() => navigate(`/products/${product?._id}`)}
-            className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-white/90 shadow flex items-center justify-center hover:scale-105 transition"
+            className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-white/90 shadow flex items-center justify-center hover:scale-105 transition cursor-pointer"
           >
             <FaEye />
           </button>
@@ -164,7 +164,7 @@ const ProductCard = ({ product }) => {
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 whileTap={{ scale: isOutOfStock ? 1 : 0.96 }}
-                className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow
+                className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow cursor-pointer
                   ${isOutOfStock
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-[#4aa649] to-[#71ce6e]"
@@ -189,7 +189,7 @@ const ProductCard = ({ product }) => {
 
               <button
                 onClick={() => navigate(`/products/${product?._id}`)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white hover:bg-gray-50 transition"
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer"
               >
                 Details
               </button>

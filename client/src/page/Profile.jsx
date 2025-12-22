@@ -212,7 +212,7 @@ const Profile = () => {
                     >
                       <button
                         onClick={() => handleDeleteAddress(a._id)}
-                        className="absolute top-2 right-2 text-red-600"
+                        className="absolute top-2 right-2 text-red-600 cursor-pointer"
                       >
                         <FaTrash />
                       </button>
