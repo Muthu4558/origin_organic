@@ -1,25 +1,22 @@
 // src/pages/ProductDetail.jsx
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { FaStar, FaShoppingCart, FaBolt, FaShareAlt } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useLoading } from "../context/LoadingContext";
-import { useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const BRAND = "#57b957";
 
 const resolveUnit = (product) => {
   if (product?.unit) return product.unit;
-
   if (["Masala Items", "Nuts", "Diabetics Mix"].includes(product?.category)) {
     return "kg";
   }
-
   return "litre";
 };
 
@@ -54,79 +51,141 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { loading: globalLoading, startLoading, stopLoading } = useLoading();
+  const [searchParams] = useSearchParams();
 
   const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
-  // activeTab now controls right-side tabs (specs / shipping)
   const [activeTab, setActiveTab] = useState("specs");
   const [isAdding, setIsAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [localLoading, setLocalLoading] = useState(true);
-  const [searchParams] = useSearchParams();
   const [canReview, setCanReview] = useState(false);
-  // show review FORM panel (hidden by default)
   const [showReviews, setShowReviews] = useState(false);
   const reviewsRef = useRef(null);
 
+  // Fetch product (extracted to reuse)
+  const fetchProduct = async () => {
+    setLocalLoading(true);
+    startLoading?.();
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/id/${id}`);
+      const p = res.data || {};
+      if (p.image && !p.images) p.images = [p.image];
+      setProduct(p);
+      setGalleryIndex(0);
+      setReviews(Array.isArray(p.reviews) ? p.reviews : []);
+    } catch (err) {
+      setProduct(null);
+      setReviews([]);
+    } finally {
+      setLocalLoading(false);
+      stopLoading?.();
+    }
+  };
+
+  useEffect(() => {
+    fetchProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // can-review check whenever product changes
   useEffect(() => {
     if (!product) return;
-
     axios
       .get(
         `${import.meta.env.VITE_APP_BASE_URL}/api/products/${product._id}/can-review`,
         { withCredentials: true }
       )
-      .then(res => setCanReview(res.data.canReview))
+      .then(res => setCanReview(Boolean(res.data?.canReview)))
       .catch(() => setCanReview(false));
   }, [product]);
 
-
+  // open review form from query param
   useEffect(() => {
-    // if URL contains review=true open the review form and scroll to it
     if (searchParams.get("review") === "true") {
       setShowReviews(true);
-      // small timeout to allow layout to render before scrolling
       setTimeout(() => reviewsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const ReviewForm = ({ productId }) => {
+  // ---------- Review Form (local component) ----------
+  const ReviewForm = ({ productId, onAddReview }) => {
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const submitReview = async () => {
+      if (!comment.trim()) {
+        toast.warning("Please enter your review comment.");
+        return;
+      }
+      if (!rating || rating < 1) {
+        toast.warning("Please provide a rating.");
+        return;
+      }
+
+      setSubmitting(true);
+      const toastId = toast.loading("Submitting review...");
       try {
-        await axios.post(
+        const res = await axios.post(
           `${import.meta.env.VITE_APP_BASE_URL}/api/products/${productId}/review`,
           { rating, comment },
           { withCredentials: true }
         );
-        window.location.reload();
+
+        // Prefer explicit returned review object if backend provides it
+        const newReview = res.data?.review ?? res.data ?? null;
+
+        if (newReview && typeof newReview === "object") {
+          // prepend new review locally
+          onAddReview(newReview);
+        } else {
+          // Fallback: re-fetch product to update reviews list
+          await fetchProduct();
+        }
+
+        // Prevent multiple reviews by this user
+        setCanReview(false);
+
+        toast.update(toastId, {
+          render: "Review submitted successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 2500,
+        });
+
+        // reset form and scroll to top of reviews list
+        setRating(5);
+        setComment("");
+        setShowReviews(false);
+        setTimeout(() => {
+          reviewsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 200);
       } catch (err) {
-        alert(err.response?.data?.message || "Review failed");
+        console.error(err);
+        toast.update(toastId, {
+          render: err.response?.data?.message || "Review submission failed",
+          type: "error",
+          isLoading: false,
+          autoClose: 3500,
+        });
+      } finally {
+        setSubmitting(false);
       }
     };
 
-
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#57b957] to-[#7bd389] px-5 py-3">
-          <h3 className="text-white font-semibold text-lg">
-            Write a Review
-          </h3>
-          <p className="text-white/80 text-sm">
-            Share your experience with this product
-          </p>
+          <h3 className="text-white font-semibold text-lg">Write a Review</h3>
+          <p className="text-white/80 text-sm">Share your experience with this product</p>
         </div>
 
-        {/* Body */}
         <div className="p-5 space-y-4">
-          {/* Star Rating */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Rating
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Your Rating</label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -134,24 +193,19 @@ const ProductDetail = () => {
                   type="button"
                   onClick={() => setRating(star)}
                   className="focus:outline-none"
+                  aria-label={`Set rating ${star}`}
                 >
                   <FaStar
-                    className={`w-7 h-7 transition ${star <= rating ? "text-yellow-400" : "text-gray-300"
-                      }`}
+                    className={`w-7 h-7 transition ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
                   />
                 </button>
               ))}
-              <span className="text-sm text-gray-600 ml-2">
-                {rating} / 5
-              </span>
+              <span className="text-sm text-gray-600 ml-2">{rating} / 5</span>
             </div>
           </div>
 
-          {/* Comment */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Review
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -160,72 +214,34 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* Action */}
           <div className="flex justify-end pt-2">
             <button
               onClick={submitReview}
-              className="inline-flex items-center gap-2 bg-[#57b957] hover:bg-[#4da84d] text-white px-6 py-2.5 rounded-full font-semibold shadow-md transition cursor-pointer"
+              disabled={submitting}
+              className={`inline-flex items-center gap-2 bg-[#57b957] hover:bg-[#4da84d] text-white px-6 py-2.5 rounded-full font-semibold shadow-md transition ${submitting ? "opacity-80 cursor-wait" : ""}`}
             >
-              Submit Review
+              {submitting ? "Submitting…" : "Submit Review"}
             </button>
           </div>
         </div>
       </div>
-
     );
   };
 
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" }); // change to window.scrollTo(0, 0) for instant
-  }, [location.pathname]);
-
-
-  // fetch product
-  useEffect(() => {
-    let mounted = true;
-    setLocalLoading(true);
-    startLoading?.();
-    axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/id/${id}`)
-      .then(res => {
-        if (!mounted) return;
-        const p = res.data || {};
-        if (p.image && !p.images) p.images = [p.image];
-        setProduct(p);
-        setGalleryIndex(0);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setProduct(null);
-      })
-      .finally(() => {
-        if (!mounted) return;
-        setLocalLoading(false);
-        stopLoading?.();
-      });
-
-    return () => { mounted = false; };
-  }, [id]);
-
-  const images = useMemo(() => {
-    if (!product) return [];
-    if (Array.isArray(product.images) && product.images.length > 0) return product.images;
-    if (product.image) return [product.image];
-    return [];
-  }, [product]);
-
-  // ensure quantity >= 1 and not huge
+  // ---------- Add to cart / buy ----------
   const setQuantitySafe = (q) => {
     const n = Number(q) || 1;
     setQuantity(Math.max(1, Math.min(99, Math.floor(n))));
   };
 
-  // Add to cart (await addToCart)
   const handleAddToCart = async () => {
     if (isAdding || !product) return;
     setIsAdding(true);
     try {
-      await addToCart(product, quantity); // ✅ FIX
+      await addToCart(product, quantity);
+      toast.success("Added to cart");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to add to cart");
     } finally {
       setIsAdding(false);
     }
@@ -235,15 +251,16 @@ const ProductDetail = () => {
     if (isAdding || !product) return;
     setIsAdding(true);
     try {
-      await addToCart(product, quantity); // ✅ FIX
+      await addToCart(product, quantity);
       navigate("/cart");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to process buy now");
     } finally {
       setIsAdding(false);
     }
   };
 
-
-  // quick keyboard-friendly thumbnail navigation
+  // keyboard-friendly thumbnail
   const onThumbKey = (e, idx) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -251,19 +268,27 @@ const ProductDetail = () => {
     }
   };
 
-  // Render
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
+
+  // compute images + product derived data
+  const images = useMemo(() => {
+    if (!product) return [];
+    if (Array.isArray(product.images) && product.images.length > 0) return product.images;
+    if (product.image) return [product.image];
+    return [];
+  }, [product]);
+
+  // render loading / not found
   if (localLoading || globalLoading) {
     return (
       <>
         <Navbar />
         <main className="min-h-screen mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 py-8">
-            <section className="lg:col-span-6">
-              <Skeleton />
-            </section>
-            <section className="lg:col-span-6">
-              <Skeleton />
-            </section>
+            <section className="lg:col-span-6"><Skeleton /></section>
+            <section className="lg:col-span-6"><Skeleton /></section>
           </div>
         </main>
         <Footer />
@@ -295,16 +320,13 @@ const ProductDetail = () => {
   return (
     <>
       <Navbar />
-
       <main className="min-h-screen pb-32 mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          {/* Grid: Image (left), Info (right), Reviews (mobile after info, desktop under image) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* 1) IMAGE SECTION (DOM first) */}
+            {/* IMAGE SECTION */}
             <section className="order-1 lg:col-start-1 lg:col-span-7 lg:row-start-1">
               <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
                 <div className="flex flex-col lg:flex-row gap-6">
-                  {/* Thumbs */}
                   <div className="hidden lg:flex lg:flex-col gap-3 w-28 sticky top-28 self-start">
                     {images.length ? images.map((img, i) => (
                       <button
@@ -316,12 +338,9 @@ const ProductDetail = () => {
                       >
                         <img src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${img}`} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                       </button>
-                    )) : (
-                      <div className="w-24 h-24 rounded-lg bg-gray-100" />
-                    )}
+                    )) : <div className="w-24 h-24 rounded-lg bg-gray-100" />}
                   </div>
 
-                  {/* Main image */}
                   <div className="flex-1 flex flex-col gap-3">
                     <div className="relative bg-gray-50 rounded-xl p-4 flex items-center justify-center" style={{ minHeight: 360 }}>
                       <AnimatePresence mode="wait">
@@ -345,9 +364,7 @@ const ProductDetail = () => {
                       </AnimatePresence>
 
                       {product.featured && (
-                        <div className="absolute left-4 top-4 bg-gradient-to-r from-yellow-300 to-red-300 text-xs font-semibold text-gray-900 px-3 py-1 rounded-full shadow">
-                          Featured
-                        </div>
+                        <div className="absolute left-4 top-4 bg-gradient-to-r from-yellow-300 to-red-300 text-xs font-semibold text-gray-900 px-3 py-1 rounded-full shadow">Featured</div>
                       )}
 
                       {offerPrice && (
@@ -357,7 +374,6 @@ const ProductDetail = () => {
                       )}
                     </div>
 
-                    {/* Mobile strip */}
                     <div className="mt-3 lg:hidden">
                       <div className="flex gap-3 overflow-x-auto pb-2">
                         {images.map((img, i) => (
@@ -372,13 +388,12 @@ const ProductDetail = () => {
                       </div>
                     </div>
 
-                    {/* Image meta */}
                     <div className="flex items-center justify-between gap-4 mt-2">
                       <div className="flex items-center gap-3 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <Stars value={rating} />
                           <span className="font-semibold">{rating.toFixed(1)}</span>
-                          <span className="text-gray-400">• {product.reviews?.length ?? 0} reviews</span>
+                          <span className="text-gray-400">• {reviews?.length ?? 0} reviews</span>
                         </div>
                       </div>
 
@@ -387,7 +402,7 @@ const ProductDetail = () => {
                           title="Share product"
                           aria-label="Share product"
                           className="bg-[#57b957] p-2 rounded-md text-white cursor-pointer"
-                          onClick={() => navigator.share ? navigator.share({ title: product.name, text: product.description, url: window.location.href }).catch(() => { }) : null}
+                          onClick={() => navigator.share ? navigator.share({ title: product.name, text: product.description, url: window.location.href }).catch(() => { toast.info("Share not supported"); }) : toast.info("Share not supported")}
                         >
                           <FaShareAlt />
                         </button>
@@ -396,14 +411,12 @@ const ProductDetail = () => {
                   </div>
                 </div>
               </div>
-              {/* REVIEWS – ATTACHED TO IMAGE (NO GRID GAP POSSIBLE) */}
+
+              {/* REVIEWS */}
               <div ref={reviewsRef} className="mt-4">
                 <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                  {/* Header */}
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">
-                      Reviews ({product.reviews?.length || 0})
-                    </h3>
+                    <h3 className="text-lg font-semibold">Reviews ({reviews?.length || 0})</h3>
 
                     {canReview && (
                       <button
@@ -415,35 +428,30 @@ const ProductDetail = () => {
                     )}
                   </div>
 
-                  {/* Review list */}
                   <div className="space-y-3 mt-3">
-                    {product.reviews?.length > 0 ? (
-                      product.reviews.map((r, i) => <Review key={i} {...r} />)
+                    {reviews?.length > 0 ? (
+                      reviews.map((r, i) => <Review key={r._id ?? i} {...r} />)
                     ) : (
                       <p className="text-sm text-gray-600">No reviews yet</p>
                     )}
                   </div>
 
-                  {/* Review form */}
                   {showReviews && (
                     <div className="mt-4 border-t pt-4">
                       {canReview ? (
-                        <ReviewForm productId={product._id} />
+                        <ReviewForm productId={product._id} onAddReview={(rev) => setReviews(prev => [rev, ...prev])} />
                       ) : (
-                        <p className="text-sm text-gray-500">
-                          Only users who purchased and received this product can write a review.
-                        </p>
+                        <p className="text-sm text-gray-500">Only users who purchased and received this product can write a review.</p>
                       )}
                     </div>
                   )}
 
-                  <p className="mt-4 text-sm text-gray-400">After Buying the product, you can add a review.</p>
+                  <p className="mt-4 text-sm text-gray-400">After buying the product, you can add a review.</p>
                 </div>
               </div>
-
             </section>
 
-            {/* 2) INFO SECTION (DOM second) */}
+            {/* INFO SECTION */}
             <section className="order-2 lg:col-start-8 lg:col-span-5 lg:row-start-1">
               <div className="sticky top-28 space-y-4">
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -478,7 +486,6 @@ const ProductDetail = () => {
                     </div>
                   </div>
 
-                  {/* Quantity + action row */}
                   <div className="mt-6 border-t border-gray-100 pt-4">
                     <div className="flex items-center gap-3">
                       <label htmlFor="qty" className="text-sm text-gray-600">Qty</label>
@@ -531,16 +538,11 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* SPECS + SHIPPING tabs on right side as requested */}
                 <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div className="flex gap-2">
-                      <button onClick={() => setActiveTab('specs')} className={`py-2 px-3 rounded ${activeTab === 'specs' ? 'bg-[#f0fcf4] text-[#057a3b] font-semibold' : 'text-gray-600'} cursor-pointer`}>
-                        Specifications
-                      </button>
-                      <button onClick={() => setActiveTab('shipping')} className={`py-2 px-3 rounded ${activeTab === 'shipping' ? 'bg-[#fff7ed] text-[#a65b00] font-semibold' : 'text-gray-600'} cursor-pointer`}>
-                        Shipping
-                      </button>
+                      <button onClick={() => setActiveTab('specs')} className={`py-2 px-3 rounded ${activeTab === 'specs' ? 'bg-[#f0fcf4] text-[#057a3b] font-semibold' : 'text-gray-600'} cursor-pointer`}>Specifications</button>
+                      <button onClick={() => setActiveTab('shipping')} className={`py-2 px-3 rounded ${activeTab === 'shipping' ? 'bg-[#fff7ed] text-[#a65b00] font-semibold' : 'text-gray-600'} cursor-pointer`}>Shipping</button>
                     </div>
                     <div className="text-xs text-gray-500">Info</div>
                   </div>
@@ -571,7 +573,6 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* small seller CTA */}
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 text-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#eaf6ea] text-[#57b957] flex items-center justify-center font-bold">O</div>
@@ -583,8 +584,6 @@ const ProductDetail = () => {
                 </div>
               </div>
             </section>
-
-
           </div>
         </div>
 

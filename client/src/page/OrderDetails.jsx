@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { FaBoxOpen, FaTruck, FaCheckCircle } from "react-icons/fa";
 import { MdArrowRightAlt, MdDashboard, MdRateReview } from "react-icons/md";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -35,16 +36,36 @@ const OrderDetails = () => {
     };
 
     const updateStatus = async (status) => {
-        await axios.put(
-            `${import.meta.env.VITE_APP_BASE_URL}/api/orders/admin/update-status/${id}`,
-            {
-                status,
-                expectedDeliveryDate: deliveryDate || null,
-            },
-            { withCredentials: true }
-        );
-        fetchOrder();
-    };
+  try {
+    const toastId = toast.loading("Updating order status...");
+
+    await axios.put(
+      `${import.meta.env.VITE_APP_BASE_URL}/api/orders/admin/update-status/${id}`,
+      {
+        status,
+        expectedDeliveryDate: deliveryDate || null,
+      },
+      { withCredentials: true }
+    );
+
+    toast.update(toastId, {
+      render:
+        status === "DISPATCHED"
+          ? "🚚 Order marked as Dispatched!"
+          : "✅ Order marked as Delivered!",
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
+
+    fetchOrder();
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "❌ Failed to update order status"
+    );
+  }
+};
+
 
     useEffect(() => {
         fetchOrder();
@@ -219,7 +240,7 @@ const OrderDetails = () => {
                                 {timeline.dispatched.status && !timeline.delivered.status && (
                                     <button
                                         onClick={() => updateStatus("DELIVERED")}
-                                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#57b957] to-green-400 text-white font-semibold shadow hover:shadow-lg transition w-full sm:w-auto"
+                                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#57b957] to-green-400 text-white font-semibold shadow hover:shadow-lg transition w-full sm:w-auto cursor-pointer"
                                     >
                                         Mark as Delivered
                                     </button>
