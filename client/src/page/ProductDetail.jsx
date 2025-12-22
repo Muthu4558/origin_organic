@@ -9,6 +9,7 @@ import { FaStar, FaShoppingCart, FaBolt, FaHeart, FaShareAlt } from "react-icons
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useLoading } from "../context/LoadingContext";
+import { useSearchParams } from "react-router-dom";
 
 const BRAND = "#57b957";
 
@@ -60,6 +61,77 @@ const ProductDetail = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [localLoading, setLocalLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const [canReview, setCanReview] = useState(false);
+
+  useEffect(() => {
+  if (!product) return;
+
+  axios
+    .get(
+      `${import.meta.env.VITE_APP_BASE_URL}/api/products/${product._id}/can-review`,
+      { withCredentials: true }
+    )
+    .then(res => setCanReview(res.data.canReview))
+    .catch(() => setCanReview(false));
+}, [product]);
+
+
+  useEffect(() => {
+    if (searchParams.get("review") === "true") {
+      setActiveTab("reviews");
+    }
+  }, []);
+
+  const ReviewForm = ({ productId }) => {
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState("");
+
+    const submitReview = async () => {
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_APP_BASE_URL}/api/products/${productId}/review`,
+          { rating, comment },
+          { withCredentials: true }
+        );
+        window.location.reload();
+      } catch (err) {
+        alert(err.response?.data?.message || "Review failed");
+      }
+    };
+
+
+    return (
+      <div className="bg-[#f8fff9] p-4 rounded-lg">
+        <h3 className="font-semibold mb-2">Write a Review</h3>
+
+        <select
+          value={rating}
+          onChange={(e) => setRating(e.target.value)}
+          className="border p-2 rounded mb-2"
+        >
+          {[5, 4, 3, 2, 1].map(r => (
+            <option key={r} value={r}>{r} Star</option>
+          ))}
+        </select>
+
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Write your review..."
+          className="w-full border rounded p-2 mb-2"
+        />
+
+        <button
+          onClick={submitReview}
+          className="bg-[#57b957] text-white px-4 py-2 rounded"
+        >
+          Submit Review
+        </button>
+      </div>
+    );
+  };
+
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" }); // change to window.scrollTo(0, 0) for instant
@@ -423,18 +495,28 @@ const ProductDetail = () => {
                       )}
 
                       {activeTab === "reviews" && (
-                        <motion.div key="reviews" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-                          <div className="space-y-4">
-                            {product.reviews && product.reviews.length > 0 ? (
-                              product.reviews.map((r, i) => (
-                                <Review key={i} {...r} />
-                              ))
-                            ) : (
-                              <div className="text-sm text-gray-600">No reviews yet. Be the first to review this product.</div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
+  <motion.div>
+    {/* ✅ REVIEW FORM ONLY FOR DELIVERED USERS */}
+    {canReview && <ReviewForm productId={product._id} />}
+
+    {!canReview && (
+      <p className="text-sm text-gray-500 mb-4">
+        Only users who purchased and received this product can write a review.
+      </p>
+    )}
+
+    {/* ✅ ALL USERS CAN SEE REVIEWS */}
+    <div className="space-y-4 mt-4">
+      {product.reviews?.length > 0 ? (
+        product.reviews.map((r, i) => <Review key={i} {...r} />)
+      ) : (
+        <p className="text-sm text-gray-600">No reviews yet</p>
+      )}
+    </div>
+  </motion.div>
+)}
+
+
 
                       {activeTab === "shipping" && (
                         <motion.div key="shipping" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>

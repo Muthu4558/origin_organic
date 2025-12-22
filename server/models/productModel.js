@@ -26,8 +26,20 @@ const productSchema = new mongoose.Schema({
 
   image: { type: String },
 
-  featured: { type: Boolean, default: false }
+  featured: { type: Boolean, default: false },
+
+  // ✅ ADD THIS
+  reviews: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      author: String,
+      rating: { type: Number, min: 1, max: 5 },
+      comment: String,
+      createdAt: { type: Date, default: Date.now }
+    }
+  ]
 }, { timestamps: true });
+
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

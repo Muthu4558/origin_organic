@@ -165,6 +165,21 @@ const OrderDetails = () => {
                                                     </p>
                                                 )}
                                             </div>
+
+                                            {step.key === "delivered" && timeline.delivered.status && !isAdmin && (
+                                                <div className="mt-3">
+                                                    {order.items.map(item => (
+                                                        <Link
+                                                            key={item.product._id}
+                                                            to={`/products/${item.product._id}?review=true`}
+                                                            className="inline-block text-sm font-semibold text-[#57b957] underline"
+                                                        >
+                                                            Review {item.product.name}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+
                                         </div>
                                     );
                                 })}
