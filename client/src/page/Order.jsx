@@ -56,7 +56,7 @@ const Order = () => {
 
             <div className="min-h-screen pt-24 pb-12 px-4 mt-8">
                 <div className="max-w-5xl mx-auto">
-                    <h1 className="text-2xl font-semibold mb-6">My Orders</h1>
+                    <h1 className="text-2xl font-semibold mb-6">My <span className="text-[#57b957]">Orders</span></h1>
 
                     {loading && (
                         <p className="text-center text-gray-500">
@@ -65,9 +65,21 @@ const Order = () => {
                     )}
 
                     {!loading && orders.length === 0 && (
-                        <p className="text-center text-gray-500">
-                            No orders placed yet.
-                        </p>
+                        <div>
+                            <p className="text-center text-gray-500">
+                                No orders placed yet.
+                            </p>
+
+                            <div className="text-center">
+                                <a
+                                    href="/products/all-products"
+                                    className="p-2 bg-[#57b957] text-white rounded-md inline-block mt-4"
+                                >
+                                    View Products
+                                </a>
+                            </div>
+
+                        </div>
                     )}
 
                     <div className="space-y-8">

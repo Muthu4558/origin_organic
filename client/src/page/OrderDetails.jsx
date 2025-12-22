@@ -4,7 +4,7 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { FaBoxOpen, FaTruck, FaCheckCircle } from "react-icons/fa";
-import { MdArrowRightAlt, MdDashboard } from "react-icons/md";
+import { MdArrowRightAlt, MdDashboard, MdRateReview } from "react-icons/md";
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -111,7 +111,7 @@ const OrderDetails = () => {
                 {/* CONTENT */}
                 <div className="max-w-4xl mx-auto">
                     <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-gray-800">
-                        Order Tracking
+                        Order <span className="text-[#57b957]">Tracking</span>
                     </h1>
 
                     {/* TIMELINE CARD */}
@@ -164,21 +164,22 @@ const OrderDetails = () => {
                                                         </span>
                                                     </p>
                                                 )}
-                                            </div>
 
-                                            {step.key === "delivered" && timeline.delivered.status && !isAdmin && (
+
+                                                {step.key === "delivered" && timeline.delivered.status && !isAdmin && (
                                                 <div className="mt-3">
                                                     {order.items.map(item => (
                                                         <Link
                                                             key={item.product._id}
                                                             to={`/products/${item.product._id}?review=true`}
-                                                            className="inline-block text-sm font-semibold text-[#57b957] underline"
+                                                            className="flex items-center gap-2 text-2xl font-semibold text-[#57b957] underline mt-5"
                                                         >
-                                                            Review {item.product.name}
+                                                            <span><MdRateReview /></span>Review {item.product.name} 
                                                         </Link>
                                                     ))}
                                                 </div>
                                             )}
+                                            </div>
 
                                         </div>
                                     );

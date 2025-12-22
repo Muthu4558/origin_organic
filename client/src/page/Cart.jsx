@@ -144,7 +144,7 @@ const Cart = () => {
                   <FaShoppingCart className="text-2xl" style={{ color: BRAND }} />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-extrabold text-gray-900">Your Cart</h1>
+                  <h1 className="text-3xl font-extrabold text-gray-900">Your <span className="text-[#57b957]">Cart</span></h1>
                   <p className="text-sm text-gray-500">Review items, update quantities, or proceed to checkout.</p>
                 </div>
               </div>
