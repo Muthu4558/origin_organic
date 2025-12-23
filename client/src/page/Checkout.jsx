@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import Loader from "../components/Loader"; // Full-page loader
 import { useCart } from "../context/CartContext";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -43,7 +44,7 @@ const Checkout = () => {
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [editAddressForm, setEditAddressForm] = useState(emptyAddress);
 
-  const [loading, setLoading] = useState(false); // <-- Loading state
+  const [loading, setLoading] = useState(false); // Full-page loader state
 
   useEffect(() => {
     fetchCart();
@@ -114,68 +115,75 @@ const Checkout = () => {
 
   /* ---------- PAYMENT ---------- */
   const placeOrder = async () => {
-    if (!selectedAddress) return toast.error("Select address");
-    if (!cartItems.length) return toast.error("Cart empty");
+  if (!selectedAddress) return toast.error("Select address");
+  if (!cartItems.length) return toast.error("Cart empty");
 
-    try {
-      setLoading(true); // Start loading
+  try {
+    setLoading(true); // Start full-page loader
 
-      const loaded = await loadRazorpay();
-      if (!loaded) {
-        setLoading(false);
-        return toast.error("Razorpay SDK failed");
-      }
-
-      const orderRes = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
-        { amount: total },
-        { withCredentials: true }
-      );
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderRes.data.amount,
-        currency: "INR",
-        name: "Origin Organic",
-        order_id: orderRes.data.id,
-        handler: async (response) => {
-          try {
-            await axios.post(
-              `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
-              {
-                address: selectedAddress,
-                paymentMethod: "ONLINE",
-                paymentId: response.razorpay_payment_id,
-              },
-              { withCredentials: true }
-            );
-            toast.success("Payment successful");
-            navigate("/thankyou");
-          } catch {
-            toast.error("Order placement failed");
-          } finally {
-            setLoading(false); // Stop loading after payment
-          }
-        },
-        prefill: {
-          name: profile?.name,
-          email: profile?.email,
-          contact: profile?.number,
-        },
-        theme: { color: "#57b957" },
-      };
-
-      new window.Razorpay(options).open();
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
+    const loaded = await loadRazorpay();
+    if (!loaded) {
       setLoading(false);
+      return toast.error("Razorpay SDK failed");
     }
-  };
+
+    const orderRes = await axios.post(
+      `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
+      { amount: total },
+      { withCredentials: true }
+    );
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: orderRes.data.amount,
+      currency: "INR",
+      name: "Origin Organic",
+      order_id: orderRes.data.id,
+      handler: async (response) => {
+        try {
+          await axios.post(
+            `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
+            {
+              address: selectedAddress,
+              paymentMethod: "ONLINE",
+              paymentId: response.razorpay_payment_id,
+            },
+            { withCredentials: true }
+          );
+          toast.success("Payment successful");
+          navigate("/thankyou");
+        } catch {
+          toast.error("Order placement failed");
+        } finally {
+          setLoading(false); // Stop loader after successful payment
+        }
+      },
+      prefill: {
+        name: profile?.name,
+        email: profile?.email,
+        contact: profile?.number,
+      },
+      theme: { color: "#57b957" },
+      modal: {
+        ondismiss: function () {
+          setLoading(false); // Stop loader if user cancels payment
+        },
+      },
+    };
+
+    new window.Razorpay(options).open();
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
       <Navbar />
+      {loading && <Loader />} {/* Full-page loader */}
       <div className="min-h-screen pt-30 pb-12 px-4">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
           {/* LEFT */}
