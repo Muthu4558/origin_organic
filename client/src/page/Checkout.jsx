@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
+import { motion } from "framer-motion";
 import indiaStates from "../data/indiaStates.json";
 
 /* ---------- Razorpay Loader ---------- */
@@ -42,6 +43,8 @@ const Checkout = () => {
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [editAddressForm, setEditAddressForm] = useState(emptyAddress);
 
+  const [loading, setLoading] = useState(false); // <-- Loading state
+
   useEffect(() => {
     fetchCart();
     axios
@@ -58,7 +61,8 @@ const Checkout = () => {
   const total = useMemo(
     () =>
       cartItems.reduce(
-        (sum, item) => sum + (item.product.offerPrice ?? item.product.price) * item.quantity,
+        (sum, item) =>
+          sum + (item.product.offerPrice ?? item.product.price) * item.quantity,
         0
       ),
     [cartItems]
@@ -113,41 +117,60 @@ const Checkout = () => {
     if (!selectedAddress) return toast.error("Select address");
     if (!cartItems.length) return toast.error("Cart empty");
 
-    const loaded = await loadRazorpay();
-    if (!loaded) return toast.error("Razorpay SDK failed");
+    try {
+      setLoading(true); // Start loading
 
-    const orderRes = await axios.post(
-      `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
-      { amount: total },
-      { withCredentials: true }
-    );
+      const loaded = await loadRazorpay();
+      if (!loaded) {
+        setLoading(false);
+        return toast.error("Razorpay SDK failed");
+      }
 
-    new window.Razorpay({
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: orderRes.data.amount,
-      currency: "INR",
-      name: "Origin Organic",
-      order_id: orderRes.data.id,
-      handler: async (response) => {
-        await axios.post(
-          `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
-          {
-            address: selectedAddress,
-            paymentMethod: "ONLINE",
-            paymentId: response.razorpay_payment_id,
-          },
-          { withCredentials: true }
-        );
-        toast.success("Payment successful");
-        navigate("/thankyou");
-      },
-      prefill: {
-        name: profile?.name,
-        email: profile?.email,
-        contact: profile?.number,
-      },
-      theme: { color: "#57b957" },
-    }).open();
+      const orderRes = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
+        { amount: total },
+        { withCredentials: true }
+      );
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderRes.data.amount,
+        currency: "INR",
+        name: "Origin Organic",
+        order_id: orderRes.data.id,
+        handler: async (response) => {
+          try {
+            await axios.post(
+              `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
+              {
+                address: selectedAddress,
+                paymentMethod: "ONLINE",
+                paymentId: response.razorpay_payment_id,
+              },
+              { withCredentials: true }
+            );
+            toast.success("Payment successful");
+            navigate("/thankyou");
+          } catch {
+            toast.error("Order placement failed");
+          } finally {
+            setLoading(false); // Stop loading after payment
+          }
+        },
+        prefill: {
+          name: profile?.name,
+          email: profile?.email,
+          contact: profile?.number,
+        },
+        theme: { color: "#57b957" },
+      };
+
+      new window.Razorpay(options).open();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+      setLoading(false);
+    }
   };
 
   return (
@@ -186,10 +209,11 @@ const Checkout = () => {
                 {addresses.map((a) => (
                   <label
                     key={a._id}
-                    className={`flex gap-3 p-4 border rounded-lg cursor-pointer ${selectedAddress?._id === a._id
-                      ? "bg-green-50 border-[#57b957]"
-                      : "hover:border-[#57b957]"
-                      }`}
+                    className={`flex gap-3 p-4 border rounded-lg cursor-pointer ${
+                      selectedAddress?._id === a._id
+                        ? "bg-green-50 border-[#57b957]"
+                        : "hover:border-[#57b957]"
+                    }`}
                     onClick={() => setSelectedAddress(a)}
                   >
                     <input type="radio" checked={selectedAddress?._id === a._id} readOnly />
@@ -228,16 +252,14 @@ const Checkout = () => {
                     </button>
                   </div>
 
+                  {/* Address Form */}
                   <div className="grid sm:grid-cols-4 gap-4">
-                    {/* Street */}
                     <input
                       placeholder="Street"
                       value={newAddress.street}
                       onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
                       className="border rounded-lg px-3 py-2 sm:col-span-2"
                     />
-
-                    {/* Landmark */}
                     <input
                       placeholder="Landmark"
                       value={newAddress.landmark}
@@ -247,18 +269,17 @@ const Checkout = () => {
                   </div>
 
                   <div className="grid sm:grid-cols-4 gap-4 mt-2">
-                    {/* City */}
                     <input
                       placeholder="City"
                       value={newAddress.city}
                       onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
                       className="border rounded-lg px-3 py-2 sm:col-span-2"
                     />
-
-                    {/* State */}
                     <select
                       value={newAddress.state}
-                      onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value, district: "" })}
+                      onChange={(e) =>
+                        setNewAddress({ ...newAddress, state: e.target.value, district: "" })
+                      }
                       className="border rounded-lg px-3 py-2 sm:col-span-2"
                     >
                       <option value="">Select State</option>
@@ -271,7 +292,6 @@ const Checkout = () => {
                   </div>
 
                   <div className="grid sm:grid-cols-4 gap-4 mt-2">
-                    {/* District */}
                     <select
                       value={newAddress.district}
                       onChange={(e) => setNewAddress({ ...newAddress, district: e.target.value })}
@@ -287,7 +307,6 @@ const Checkout = () => {
                         ))}
                     </select>
 
-                    {/* Pincode */}
                     <input
                       placeholder="Pincode"
                       value={newAddress.pincode}
@@ -321,8 +340,8 @@ const Checkout = () => {
                     </button>
                   </div>
 
+                  {/* Edit Form */}
                   <div className="grid sm:grid-cols-4 gap-4">
-                    {/* Street */}
                     <input
                       placeholder="Street"
                       value={editAddressForm.street}
@@ -331,8 +350,6 @@ const Checkout = () => {
                       }
                       className="border rounded-lg px-3 py-2 sm:col-span-2"
                     />
-
-                    {/* Landmark */}
                     <input
                       placeholder="Landmark"
                       value={editAddressForm.landmark}
@@ -344,7 +361,6 @@ const Checkout = () => {
                   </div>
 
                   <div className="grid sm:grid-cols-4 gap-4 mt-2">
-                    {/* City */}
                     <input
                       placeholder="City"
                       value={editAddressForm.city}
@@ -353,8 +369,6 @@ const Checkout = () => {
                       }
                       className="border rounded-lg px-3 py-2 sm:col-span-2"
                     />
-
-                    {/* State */}
                     <select
                       value={editAddressForm.state}
                       onChange={(e) =>
@@ -372,7 +386,6 @@ const Checkout = () => {
                   </div>
 
                   <div className="grid sm:grid-cols-4 gap-4 mt-2">
-                    {/* District */}
                     <select
                       value={editAddressForm.district}
                       onChange={(e) =>
@@ -390,7 +403,6 @@ const Checkout = () => {
                         ))}
                     </select>
 
-                    {/* Pincode */}
                     <input
                       placeholder="Pincode"
                       value={editAddressForm.pincode}
@@ -436,9 +448,17 @@ const Checkout = () => {
 
             <button
               onClick={placeOrder}
-              className="mt-5 w-full bg-[#57b957] text-white py-3 rounded-lg font-semibold cursor-pointer"
+              disabled={loading}
+              className={`mt-5 w-full py-3 rounded-lg font-semibold text-white flex justify-center items-center gap-2 ${
+                loading ? "bg-green-400 cursor-not-allowed" : "bg-[#57b957] cursor-pointer"
+              }`}
             >
-              Pay & Place Order
+              {loading && (
+                <motion.div
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                />
+              )}
+              {loading ? "Processing..." : "Pay & Place Order"}
             </button>
           </div>
         </div>
