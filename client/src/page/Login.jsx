@@ -1,24 +1,24 @@
 // src/pages/Login.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
-import "react-toastify/dist/ReactToastify.css";
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaGoogle, FaApple, FaFacebookF } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { GoogleLogin } from "@react-oauth/google";
+import { useCart } from "../context/CartContext";
+
 import LeftImg from "../assets/Login.png";
 import Logo from "../assets/logo.png";
-import { useCart } from "../context/CartContext"; // <- added
-import { GoogleLogin } from "@react-oauth/google";
 
 const BRAND = "#57b957";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || null; // preserve original destination
+  const from = location.state?.from?.pathname || null;
 
-  const { fetchCart } = useCart(); // <- get fetchCart from context
+  const { fetchCart } = useCart();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,8 +26,11 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(false);
 
+  /* ---------------- LOGIN ---------------- */
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     try {
       const res = await axios.post(
@@ -36,41 +39,34 @@ const Login = () => {
         { withCredentials: true }
       );
 
-      // Save token and admin flag for PrivateRoute checks
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("isAdmin", res.data.isAdmin ? "true" : "false");
 
-      if (remember) localStorage.setItem("rememberEmail", email);
-      else localStorage.removeItem("rememberEmail");
+      remember
+        ? localStorage.setItem("rememberEmail", email)
+        : localStorage.removeItem("rememberEmail");
 
       toast.success("Login successful");
 
-      // IMPORTANT: refresh cart data immediately so protected pages (like /cart) show up-to-date items
-      try {
-        // fetchCart is async; wait for it so UI shows fresh data before navigation
-        if (typeof fetchCart === "function") {
-          await fetchCart();
-        }
-      } catch (err) {
-        // non-fatal: if fetchCart fails, we'll still navigate — user can refresh or retry
-        // console.warn("fetchCart after login failed", err);
+      if (typeof fetchCart === "function") {
+        await fetchCart();
       }
 
-      // Navigate to the original intended page if present, otherwise fallback
       if (from) {
         navigate(from, { replace: true });
       } else {
-        if (res.data.isAdmin) navigate("/admin", { replace: true });
-        else navigate("/", { replace: true });
+        navigate(res.data.isAdmin ? "/admin" : "/", { replace: true });
       }
     } catch (error) {
-      const msg = error?.response?.data?.message || "Login failed. Check credentials.";
-      toast.error(msg);
+      toast.error(
+        error?.response?.data?.message || "Login failed. Check credentials."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  /* ---------------- GOOGLE LOGIN ---------------- */
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       setLoading(true);
@@ -83,33 +79,25 @@ const Login = () => {
 
       toast.success("Logged in with Google");
 
-      // refresh cart
       if (typeof fetchCart === "function") {
         await fetchCart();
       }
 
-      // redirect
-      if (from) {
-        navigate(from, { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
-    } catch (err) {
-      console.error(err);
+      navigate(from || "/", { replace: true });
+    } catch {
       toast.error("Google login failed");
     } finally {
       setLoading(false);
     }
   };
 
-
-  React.useEffect(() => {
+  /* ---------------- REMEMBER EMAIL ---------------- */
+  useEffect(() => {
     const rem = localStorage.getItem("rememberEmail");
     if (rem) {
       setEmail(rem);
       setRemember(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -119,47 +107,31 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
         className="w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl bg-transparent max-h-[95vh] flex"
-        aria-live="polite"
       >
+        {/* LEFT PANEL */}
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-18 h-full">
-          <div className="max-w-xs text-center overflow-auto">
+          <div className="max-w-xs text-center">
             <div className="flex justify-center mb-10">
-              <img width={200} src={Logo} alt="img" />
+              <img width={200} src={Logo} alt="Origin Organic" />
             </div>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Welcome <span className="text-[#57b957]">back!</span></h2>
+
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
+              Welcome <span className="text-[#57b957]">back!</span>
+            </h2>
             <p className="text-sm text-gray-600">
               Sign in to continue — fast checkout, order tracking and personalised recommendations.
             </p>
 
-            <div className="mt-6 flex justify-center gap-3">
-              <button
-                // onClick={() => toast.info("Social sign-in not configured")}
-                // className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
-              >
-                <GoogleLogin
-                  onSuccess={handleGoogleLogin}
-                  onError={() => toast.error("Google login failed")}
-                  useOneTap={false}
-                />
-
-              </button>
-              {/* <button
-                onClick={() => toast.info("Social sign-in not configured")}
-                className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
-              >
-                <FaFacebookF className="text-blue-600" /> Sign in with Facebook
-              </button>
-              <button
-                onClick={() => toast.info("Social sign-in not configured")}
-                className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-black text-white hover:shadow transition"
-              >
-                <FaApple /> Sign in with Apple
-              </button> */}
+            <div className="mt-6 flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => toast.error("Google login failed")}
+              />
             </div>
           </div>
         </div>
 
-        {/* form side */}
+        {/* RIGHT FORM */}
         <div className="w-full lg:w-1/2 bg-white p-4 sm:p-8 overflow-auto h-full">
           <div className="max-w-md mx-auto">
             <div className="text-center mb-4">
@@ -167,49 +139,47 @@ const Login = () => {
                 <img src={Logo} alt="logo" className="w-20" />
               </div>
 
-              <h1 className="text-2xl font-extrabold text-gray-900">Login in to <span className="text-[#57b957]">your account</span></h1>
-              <p className="text-sm text-gray-500 mt-1">Use your registered email to continue.</p>
+              <h1 className="text-2xl font-extrabold text-gray-900">
+                Login in to <span className="text-[#57b957]">your account</span>
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Use your registered email to continue.
+              </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
+              {/* EMAIL */}
               <label className="block">
                 <span className="text-xs font-medium text-gray-600">Email</span>
                 <div className="mt-2 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <FaEnvelope />
-                  </span>
+                  <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     required
-                    autoFocus
-                    aria-label="Email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-3 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#dfeee0] transition"
+                    className="w-full pl-11 pr-3 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#dfeee0]"
                     placeholder="you@domain.com"
                   />
                 </div>
               </label>
 
+              {/* PASSWORD */}
               <label className="block">
                 <span className="text-xs font-medium text-gray-600">Password</span>
                 <div className="mt-2 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <FaLock />
-                  </span>
+                  <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     required
-                    aria-label="Password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-12 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#dfeee0] transition"
+                    className="w-full pl-11 pr-12 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#dfeee0]"
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    onClick={() => setShowPassword((s) => !s)}
+                    onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -217,6 +187,7 @@ const Login = () => {
                 </div>
               </label>
 
+              {/* REMEMBER */}
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <label className="inline-flex items-center gap-2">
                   <input
@@ -230,26 +201,25 @@ const Login = () => {
 
                 <button
                   type="button"
-                  onClick={() => toast.info("Forgot password flow not implemented")}
-                  className="text-sm text-[#57b957] hover:underline"
+                  className="text-[#57b957] hover:underline"
                 >
                   Forgot password?
                 </button>
               </div>
 
+              {/* SUBMIT */}
               <motion.button
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-full text-white font-semibold shadow cursor-pointer"
+                className={`w-full py-3 rounded-full text-white font-semibold shadow transition ${
+                  loading ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
+                }`}
                 style={{ background: BRAND }}
               >
                 {loading ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                    </svg>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     Signing in...
                   </div>
                 ) : (
@@ -258,23 +228,12 @@ const Login = () => {
               </motion.button>
             </form>
 
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex-1 h-[1px] bg-gray-100" />
-              <div className="text-xs text-gray-400">or</div>
-              <div className="flex-1 h-[1px] bg-gray-100" />
-            </div>
-
-            <div className="mt-4 flex justify-center lg:hidden">
-              <button
-                // onClick={() => toast.info("Social sign-in not configured")}
-                // className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
-              >
-                <GoogleLogin
-                  onSuccess={handleGoogleLogin}
-                  onError={() => toast.error("Google login failed")}
-                  useOneTap={false}
-                />
-              </button>
+            {/* MOBILE GOOGLE */}
+            <div className="mt-6 flex justify-center lg:hidden">
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => toast.error("Google login failed")}
+              />
             </div>
 
             <p className="mt-6 text-center text-sm text-gray-500">
