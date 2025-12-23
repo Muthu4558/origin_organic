@@ -450,7 +450,7 @@ const Checkout = () => {
               onClick={placeOrder}
               disabled={loading}
               className={`mt-5 w-full py-3 rounded-lg font-semibold text-white flex justify-center items-center gap-2 ${
-                loading ? "bg-green-400 cursor-not-allowed" : "bg-[#57b957] cursor-pointer"
+                loading ? "bg-[#57b957] cursor-not-allowed" : "bg-[#57b957] cursor-pointer"
               }`}
             >
               {loading && (
