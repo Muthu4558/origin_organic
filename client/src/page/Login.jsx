@@ -80,7 +80,7 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f6f0] via-white to-[#fffaf6] px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f6f0] via-white to-[#fffaf6] px-4 py-10">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ const Login = () => {
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-6 h-full">
           <div className="max-w-xs text-center overflow-auto">
             <div className="flex justify-center mb-10">
-              <img width={200} src={LeftImg} alt="img" />
+              <img width={200} src={Logo} alt="img" />
             </div>
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Welcome <span className="text-[#57b957]">back!</span></h2>
             <p className="text-sm text-gray-600">
@@ -122,12 +122,13 @@ const Login = () => {
         </div>
 
         {/* form side */}
-        <div className="w-full lg:w-1/2 bg-white p-6 sm:p-8 overflow-auto h-full">
+        <div className="w-full lg:w-1/2 bg-white p-4 sm:p-8 overflow-auto h-full">
           <div className="max-w-md mx-auto">
             <div className="text-center mb-4">
-              <div className="inline-flex items-center justify-center mb-3 w-14 h-14 rounded-full bg-[#f2f7f2] mx-auto">
-                <img src={Logo} alt="logo" className="w-20" />
-              </div>
+              <div className="inline-flex items-center justify-center mb-3 w-14 h-14 rounded-full bg-[#f2f7f2] mx-auto lg:hidden">
+  <img src={Logo} alt="logo" className="w-20" />
+</div>
+
               <h1 className="text-2xl font-extrabold text-gray-900">Login in to <span className="text-[#57b957]">your account</span></h1>
               <p className="text-sm text-gray-500 mt-1">Use your registered email to continue.</p>
             </div>

@@ -167,7 +167,7 @@ const Navbar = () => {
             {isAuthed ? (
               <button
                 onClick={handleLogout}
-                className="hidden lg:inline-block px-4 py-2 rounded-md bg-white border text-gray-800 hover:bg-gray-100 transition"
+                className="hidden lg:inline-block px-4 py-2 rounded-md bg-white border text-gray-800 hover:bg-gray-100 transition cursor-pointer"
               >
                 Logout
               </button>

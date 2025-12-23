@@ -1,4 +1,3 @@
-// src/pages/Signup.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -53,17 +52,17 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f0f6f0] via-white to-[#fffaf6] px-4 py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#f0f6f0] via-white to-[#fffaf6] px-4 py-12 flex items-center justify-center overflow-auto">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.36 }}
-        className="w-full max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-transparent flex flex-col lg:flex-row"
+        className="w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-transparent flex flex-col lg:flex-row min-h-[600px]"
       >
         {/* Left Side (Illustration + Info) */}
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-10">
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-6">
           <div className="max-w-xs text-center">
-            <img src={LeftImg} alt="illustration" className="w-64 mx-auto mb-6" />
+            <img src={Logo} alt="illustration" className="w-64 mx-auto mb-6" />
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
               Join <span className="text-[#57b957]">Origin Organic</span>
             </h2>
@@ -95,13 +94,16 @@ const Signup = () => {
         </div>
 
         {/* Right Side (Signup Form) */}
-        <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center p-8 sm:p-10">
+        <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center p-8 sm:p-10 overflow-auto">
+          <div className="inline-flex items-center justify-center mb-3 w-14 h-14 rounded-full bg-[#f2f7f2] mx-auto lg:hidden">
+            <img src={Logo} alt="logo" className="w-20" />
+          </div>
           <div className="max-w-md mx-auto w-full">
+
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center mb-3 w-14 h-14 rounded-full bg-[#f2f7f2] mx-auto">
-                <img src={Logo} alt="logo" className="w-20" />
-              </div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Create your <span style={{ color: BRAND }}>account</span></h1>
+              <h1 className="text-2xl font-extrabold text-gray-900">
+                Create your <span style={{ color: BRAND }}>account</span>
+              </h1>
               <p className="text-sm text-gray-500 mt-1">
                 Sign up to start shopping and enjoy member perks.
               </p>
@@ -230,35 +232,6 @@ const Signup = () => {
                   "Create Account"
                 )}
               </motion.button>
-
-              {/* Divider */}
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex-1 h-[1px] bg-gray-100" />
-                <div className="text-xs text-gray-400">or</div>
-                <div className="flex-1 h-[1px] bg-gray-100" />
-              </div>
-
-              {/* Social buttons */}
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => toast.info("Social signup not configured")}
-                  className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
-                >
-                  <FaGoogle className="text-red-500" /> <span className="text-xs">Google</span>
-                </button>
-                <button
-                  onClick={() => toast.info("Social signup not configured")}
-                  className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
-                >
-                  <FaFacebookF className="text-blue-600" /> <span className="text-xs">Facebook</span>
-                </button>
-                <button
-                  onClick={() => toast.info("Social signup not configured")}
-                  className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition bg-black text-white"
-                >
-                  <FaApple /> <span className="text-xs">Apple</span>
-                </button>
-              </div>
 
               <p className="mt-6 text-center text-sm text-gray-500">
                 Already have an account?{" "}
