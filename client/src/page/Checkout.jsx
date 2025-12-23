@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
+import indiaStates from "../data/indiaStates.json";
 
 /* ---------- Razorpay Loader ---------- */
 const loadRazorpay = () =>
@@ -21,7 +22,6 @@ const loadRazorpay = () =>
 const emptyAddress = {
   street: "",
   landmark: "",
-  area: "",
   city: "",
   district: "",
   state: "",
@@ -55,24 +55,24 @@ const Checkout = () => {
       .catch(() => navigate("/login"));
   }, []);
 
-  const total = useMemo(() => {
-    return cartItems.reduce((sum, item) => {
-      const price = item.product.offerPrice ?? item.product.price;
-      return sum + price * item.quantity;
-    }, 0);
-  }, [cartItems]);
+  const total = useMemo(
+    () =>
+      cartItems.reduce(
+        (sum, item) => sum + (item.product.offerPrice ?? item.product.price) * item.quantity,
+        0
+      ),
+    [cartItems]
+  );
 
   const estimatedDeliveryDate = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() + 7);
-
     return date.toLocaleDateString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
   }, []);
-
 
   /* ---------- ADDRESS APIs ---------- */
   const saveNewAddress = async () => {
@@ -153,18 +153,17 @@ const Checkout = () => {
   return (
     <>
       <Navbar />
-
       <div className="min-h-screen pt-30 pb-12 px-4">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
-
           {/* LEFT */}
           <div className="lg:col-span-2 space-y-6">
-
             {/* PROFILE */}
             {profile && (
               <div className="bg-white rounded-xl shadow p-5 border border-[#57b957]">
                 <h2 className="font-semibold mb-2">Customer Details</h2>
-                <p>{profile.name} | {profile.email} | {profile.number}</p>
+                <p>
+                  {profile.name} | {profile.email} | {profile.number}
+                </p>
               </div>
             )}
 
@@ -184,18 +183,20 @@ const Checkout = () => {
               </div>
 
               <div className="space-y-3">
-                {addresses.map(a => (
+                {addresses.map((a) => (
                   <label
                     key={a._id}
-                    className={`flex gap-3 p-4 border rounded-lg cursor-pointer
-                      ${selectedAddress?._id === a._id
-                        ? "bg-green-50 border-[#57b957]"
-                        : "hover:border-[#57b957]"}`}
+                    className={`flex gap-3 p-4 border rounded-lg cursor-pointer ${selectedAddress?._id === a._id
+                      ? "bg-green-50 border-[#57b957]"
+                      : "hover:border-[#57b957]"
+                      }`}
                     onClick={() => setSelectedAddress(a)}
                   >
                     <input type="radio" checked={selectedAddress?._id === a._id} readOnly />
                     <div className="flex-1">
-                      <p>{a.street}, {a.area}, {a.city}</p>
+                      <p>
+                        {a.street}, {a.city}
+                      </p>
                       <p className="text-sm text-gray-600">
                         {a.district}, {a.state} - {a.pincode}
                       </p>
@@ -211,7 +212,7 @@ const Checkout = () => {
                 ))}
               </div>
 
-              {/* ADD ADDRESS */}
+              {/* ADD NEW ADDRESS */}
               {showNewAddress && (
                 <div className="mt-6 bg-gray-50 border rounded-xl p-5">
                   <div className="flex justify-between items-center mb-4">
@@ -227,18 +228,72 @@ const Checkout = () => {
                     </button>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {Object.keys(newAddress).map((f) => (
-                      <input
-                        key={f}
-                        className={`border rounded-lg px-3 py-2 ${f === "pincode" ? "sm:col-span-2" : ""}`}
-                        placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
-                        value={newAddress[f]}
-                        onChange={(e) =>
-                          setNewAddress({ ...newAddress, [f]: e.target.value })
-                        }
-                      />
-                    ))}
+                  <div className="grid sm:grid-cols-4 gap-4">
+                    {/* Street */}
+                    <input
+                      placeholder="Street"
+                      value={newAddress.street}
+                      onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
+
+                    {/* Landmark */}
+                    <input
+                      placeholder="Landmark"
+                      value={newAddress.landmark}
+                      onChange={(e) => setNewAddress({ ...newAddress, landmark: e.target.value })}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
+                  </div>
+
+                  <div className="grid sm:grid-cols-4 gap-4 mt-2">
+                    {/* City */}
+                    <input
+                      placeholder="City"
+                      value={newAddress.city}
+                      onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
+
+                    {/* State */}
+                    <select
+                      value={newAddress.state}
+                      onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value, district: "" })}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    >
+                      <option value="">Select State</option>
+                      {Object.keys(indiaStates).map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid sm:grid-cols-4 gap-4 mt-2">
+                    {/* District */}
+                    <select
+                      value={newAddress.district}
+                      onChange={(e) => setNewAddress({ ...newAddress, district: e.target.value })}
+                      disabled={!newAddress.state}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    >
+                      <option value="">Select District</option>
+                      {newAddress.state &&
+                        indiaStates[newAddress.state]?.map((district) => (
+                          <option key={district} value={district}>
+                            {district}
+                          </option>
+                        ))}
+                    </select>
+
+                    {/* Pincode */}
+                    <input
+                      placeholder="Pincode"
+                      value={newAddress.pincode}
+                      onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
                   </div>
 
                   <button
@@ -266,18 +321,84 @@ const Checkout = () => {
                     </button>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {Object.keys(editAddressForm).map((f) => (
-                      <input
-                        key={f}
-                        className={`border rounded-lg px-3 py-2 ${f === "pincode" ? "sm:col-span-2" : ""}`}
-                        placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
-                        value={editAddressForm[f]}
-                        onChange={(e) =>
-                          setEditAddressForm({ ...editAddressForm, [f]: e.target.value })
-                        }
-                      />
-                    ))}
+                  <div className="grid sm:grid-cols-4 gap-4">
+                    {/* Street */}
+                    <input
+                      placeholder="Street"
+                      value={editAddressForm.street}
+                      onChange={(e) =>
+                        setEditAddressForm({ ...editAddressForm, street: e.target.value })
+                      }
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
+
+                    {/* Landmark */}
+                    <input
+                      placeholder="Landmark"
+                      value={editAddressForm.landmark}
+                      onChange={(e) =>
+                        setEditAddressForm({ ...editAddressForm, landmark: e.target.value })
+                      }
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
+                  </div>
+
+                  <div className="grid sm:grid-cols-4 gap-4 mt-2">
+                    {/* City */}
+                    <input
+                      placeholder="City"
+                      value={editAddressForm.city}
+                      onChange={(e) =>
+                        setEditAddressForm({ ...editAddressForm, city: e.target.value })
+                      }
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
+
+                    {/* State */}
+                    <select
+                      value={editAddressForm.state}
+                      onChange={(e) =>
+                        setEditAddressForm({ ...editAddressForm, state: e.target.value, district: "" })
+                      }
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    >
+                      <option value="">Select State</option>
+                      {Object.keys(indiaStates).map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid sm:grid-cols-4 gap-4 mt-2">
+                    {/* District */}
+                    <select
+                      value={editAddressForm.district}
+                      onChange={(e) =>
+                        setEditAddressForm({ ...editAddressForm, district: e.target.value })
+                      }
+                      disabled={!editAddressForm.state}
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    >
+                      <option value="">Select District</option>
+                      {editAddressForm.state &&
+                        indiaStates[editAddressForm.state]?.map((district) => (
+                          <option key={district} value={district}>
+                            {district}
+                          </option>
+                        ))}
+                    </select>
+
+                    {/* Pincode */}
+                    <input
+                      placeholder="Pincode"
+                      value={editAddressForm.pincode}
+                      onChange={(e) =>
+                        setEditAddressForm({ ...editAddressForm, pincode: e.target.value })
+                      }
+                      className="border rounded-lg px-3 py-2 sm:col-span-2"
+                    />
                   </div>
 
                   <button
@@ -294,10 +415,11 @@ const Checkout = () => {
           {/* RIGHT */}
           <div className="bg-white rounded-xl shadow p-5 h-fit border border-[#57b957]">
             <h2 className="font-semibold mb-4">Order Summary</h2>
-
-            {cartItems.map(item => (
+            {cartItems.map((item) => (
               <div key={item.product._id} className="flex justify-between text-sm">
-                <span>{item.product.name} × {item.quantity}</span>
+                <span>
+                  {item.product.name} × {item.quantity}
+                </span>
                 <span>₹{(item.product.offerPrice ?? item.product.price) * item.quantity}</span>
               </div>
             ))}
@@ -309,9 +431,7 @@ const Checkout = () => {
 
             <div className="flex items-center justify-between text-sm text-gray-600 mt-4">
               <span>Estimated delivery</span>
-              <span className="font-medium text-gray-800">
-                {estimatedDeliveryDate}
-              </span>
+              <span className="font-medium text-gray-800">{estimatedDeliveryDate}</span>
             </div>
 
             <button

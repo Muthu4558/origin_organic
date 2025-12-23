@@ -4,36 +4,25 @@ import Footer from "../components/Footer";
 import Loader from "../components/Loader";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {
-  FaUserCircle,
-  FaEdit,
-  FaSave,
-  FaTimes,
-  FaPlus,
-  FaTrash,
-} from "react-icons/fa";
+import { FaUserCircle, FaEdit, FaSave, FaTimes, FaPlus, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLoading } from "../context/LoadingContext";
+import indiaStates from "../data/indiaStates.json";
 
 const BRAND = "#57b957";
+
 
 const Profile = () => {
   const navigate = useNavigate();
   const { startLoading, stopLoading } = useLoading();
 
-  const [profile, setProfile] = useState({
-    name: "",
-    number: "",
-    email: "",
-  });
-
+  const [profile, setProfile] = useState({ name: "", number: "", email: "" });
   const [addresses, setAddresses] = useState([]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressForm, setAddressForm] = useState({
     street: "",
     landmark: "",
-    area: "",
     city: "",
     district: "",
     state: "",
@@ -41,31 +30,22 @@ const Profile = () => {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    number: "",
-    email: "",
-  });
-
-  const [loading, setLoading] = useState(true); // ✅ Local loader state
+  const [formData, setFormData] = useState({ name: "", number: "", email: "" });
+  const [loading, setLoading] = useState(true);
 
   // ================= FETCH PROFILE =================
   const fetchProfile = async () => {
     try {
-      setLoading(true); // start local loader
-      startLoading(); // optional global loader if needed
-      const res = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`,
-        { withCredentials: true }
-      );
-
+      setLoading(true);
+      startLoading();
+      const res = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`, { withCredentials: true });
       setProfile(res.data);
       setFormData(res.data);
       setAddresses(res.data.addresses || []);
     } catch (err) {
       navigate("/login");
     } finally {
-      setLoading(false); // stop local loader
+      setLoading(false);
       stopLoading();
     }
   };
@@ -77,17 +57,8 @@ const Profile = () => {
   // ================= PROFILE UPDATE =================
   const handleSave = async () => {
     try {
-      const res = await axios.put(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`,
-        formData,
-        { withCredentials: true }
-      );
-
-      setProfile((prev) => ({
-        ...prev,
-        ...res.data,
-      }));
-
+      const res = await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`, formData, { withCredentials: true });
+      setProfile((prev) => ({ ...prev, ...res.data }));
       setIsModalOpen(false);
       toast.success("Profile updated successfully");
     } catch (err) {
@@ -98,33 +69,17 @@ const Profile = () => {
 
   // ================= LOGOUT =================
   const handleLogout = async () => {
-    await axios.post(
-      `${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`,
-      {},
-      { withCredentials: true }
-    );
+    await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
     navigate("/login");
   };
 
   // ================= ADDRESS ADD =================
   const handleAddAddress = async () => {
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/auth/address`,
-        addressForm,
-        { withCredentials: true }
-      );
+      const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/address`, addressForm, { withCredentials: true });
       setAddresses(res.data);
       setIsAddressModalOpen(false);
-      setAddressForm({
-        street: "",
-        landmark: "",
-        area: "",
-        city: "",
-        district: "",
-        state: "",
-        pincode: "",
-      });
+      setAddressForm({ street: "", landmark: "", city: "", district: "", state: "", pincode: "" });
       toast.success("Address added");
     } catch {
       toast.error("Failed to add address");
@@ -133,14 +88,10 @@ const Profile = () => {
 
   // ================= ADDRESS DELETE =================
   const handleDeleteAddress = async (id) => {
-    const res = await axios.delete(
-      `${import.meta.env.VITE_APP_BASE_URL}/api/auth/address/${id}`,
-      { withCredentials: true }
-    );
+    const res = await axios.delete(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/address/${id}`, { withCredentials: true });
     setAddresses(res.data);
   };
 
-  // ✅ Show loader if profile is being fetched
   if (loading) return <Loader />;
 
   return (
@@ -167,17 +118,11 @@ const Profile = () => {
                 <h3 className="mt-3 font-semibold">{profile.name}</h3>
                 <p className="text-sm text-gray-500">{profile.email}</p>
 
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="mt-4 w-full bg-[#57b957] text-white py-2 rounded cursor-pointer"
-                >
+                <button onClick={() => setIsModalOpen(true)} className="mt-4 w-full bg-[#57b957] text-white py-2 rounded cursor-pointer">
                   <FaEdit className="inline mr-2" /> Edit Profile
                 </button>
 
-                <button
-                  onClick={handleLogout}
-                  className="mt-3 w-full border border-red-600 text-red-600 py-2 rounded cursor-pointer"
-                >
+                <button onClick={handleLogout} className="mt-3 w-full border border-red-600 text-red-600 py-2 rounded cursor-pointer">
                   Logout
                 </button>
               </div>
@@ -185,7 +130,6 @@ const Profile = () => {
               {/* RIGHT */}
               <div className="md:w-2/3 p-6">
                 <h2 className="font-semibold mb-4">Account Information</h2>
-
                 <p><b>Name:</b> {profile.name}</p>
                 <p><b>Phone:</b> {profile.number}</p>
                 <p><b>Email:</b> {profile.email}</p>
@@ -194,32 +138,19 @@ const Profile = () => {
                 <div className="mt-6">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold">Addresses</h3>
-                    <button
-                      onClick={() => setIsAddressModalOpen(true)}
-                      className="px-3 py-1 bg-[#57b957] text-white rounded text-sm cursor-pointer"
-                    >
+                    <button onClick={() => setIsAddressModalOpen(true)} className="px-3 py-1 bg-[#57b957] text-white rounded text-sm cursor-pointer">
                       <FaPlus className="inline mr-1" /> Add
                     </button>
                   </div>
 
-                  {addresses.length === 0 && (
-                    <p className="text-sm text-gray-500">
-                      No address added yet.
-                    </p>
-                  )}
+                  {addresses.length === 0 && <p className="text-sm text-gray-500">No address added yet.</p>}
 
                   {addresses.map((a) => (
-                    <div
-                      key={a._id}
-                      className="border rounded p-3 mb-2 relative"
-                    >
-                      <button
-                        onClick={() => handleDeleteAddress(a._id)}
-                        className="absolute top-2 right-2 text-red-600 cursor-pointer"
-                      >
+                    <div key={a._id} className="border rounded p-3 mb-2 relative">
+                      <button onClick={() => handleDeleteAddress(a._id)} className="absolute top-2 right-2 text-red-600 cursor-pointer">
                         <FaTrash />
                       </button>
-                      <p>{a.street}, {a.area}</p>
+                      <p>{a.street}</p>
                       <p>{a.city}, {a.district}</p>
                       <p>{a.state} - {a.pincode}</p>
                       {a.landmark && <p>Landmark: {a.landmark}</p>}
@@ -236,49 +167,14 @@ const Profile = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-3 right-3"
-            >
-              <FaTimes />
-            </button>
-
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-3 right-3"><FaTimes /></button>
             <h3 className="text-lg font-semibold mb-3">Edit Profile</h3>
 
-            <input
-              name="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="w-full mb-2 px-3 py-2 border rounded"
-              placeholder="Name"
-            />
+            <input name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full mb-2 px-3 py-2 border rounded" placeholder="Name" />
+            <input name="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full mb-2 px-3 py-2 border rounded" placeholder="Email" />
+            <input name="number" value={formData.number} onChange={(e) => setFormData({ ...formData, number: e.target.value })} className="w-full mb-3 px-3 py-2 border rounded" placeholder="Phone" />
 
-            <input
-              name="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="w-full mb-2 px-3 py-2 border rounded"
-              placeholder="Email"
-            />
-
-            <input
-              name="number"
-              value={formData.number}
-              onChange={(e) =>
-                setFormData({ ...formData, number: e.target.value })
-              }
-              className="w-full mb-3 px-3 py-2 border rounded"
-              placeholder="Phone"
-            />
-
-            <button
-              onClick={handleSave}
-              className="w-full bg-[#57b957] text-white py-2 rounded cursor-pointer"
-            >
+            <button onClick={handleSave} className="w-full bg-[#57b957] text-white py-2 rounded cursor-pointer">
               <FaSave className="inline mr-2" /> Save
             </button>
           </div>
@@ -289,33 +185,48 @@ const Profile = () => {
       {isAddressModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
-            <button
-              onClick={() => setIsAddressModalOpen(false)}
-              className="absolute top-3 right-3"
-            >
-              <FaTimes />
-            </button>
-
+            <button onClick={() => setIsAddressModalOpen(false)} className="absolute top-3 right-3"><FaTimes /></button>
             <h3 className="font-semibold mb-3">Add Address</h3>
 
-            {Object.keys(addressForm).map((key) => (
-              <input
-                key={key}
-                placeholder={key}
-                value={addressForm[key]}
-                onChange={(e) =>
-                  setAddressForm({ ...addressForm, [key]: e.target.value })
-                }
-                className="w-full mb-2 px-3 py-2 border rounded"
-              />
-            ))}
+            <input placeholder="Street" value={addressForm.street} onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })} className="w-full mb-2 px-3 py-2 border rounded" />
+            <input placeholder="Landmark" value={addressForm.landmark} onChange={(e) => setAddressForm({ ...addressForm, landmark: e.target.value })} className="w-full mb-2 px-3 py-2 border rounded" />
+            <input placeholder="City" value={addressForm.city} onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })} className="w-full mb-2 px-3 py-2 border rounded" />
 
-            <button
-              onClick={handleAddAddress}
-              className="w-full bg-[#57b957] text-white py-2 rounded cursor-pointer"
-            >
-              Save Address
-            </button>
+            {/* State Dropdown */}
+            <select
+  value={addressForm.state}
+  onChange={(e) =>
+    setAddressForm({ ...addressForm, state: e.target.value, district: "" })
+  }
+  className="w-full mb-2 px-3 py-2 border rounded"
+>
+  <option value="">Select State</option>
+  {Object.keys(indiaStates).map((state) => (
+    <option key={state} value={state}>
+      {state}
+    </option>
+  ))}
+</select>
+
+            {/* District Dropdown */}
+            <select
+  value={addressForm.district}
+  onChange={(e) => setAddressForm({ ...addressForm, district: e.target.value })}
+  className="w-full mb-2 px-3 py-2 border rounded"
+  disabled={!addressForm.state}
+>
+  <option value="">Select District</option>
+  {addressForm.state &&
+    indiaStates[addressForm.state].map((district) => (
+      <option key={district} value={district}>
+        {district}
+      </option>
+    ))}
+</select>
+
+            <input placeholder="Pincode" value={addressForm.pincode} onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })} className="w-full mb-2 px-3 py-2 border rounded" />
+
+            <button onClick={handleAddAddress} className="w-full bg-[#57b957] text-white py-2 rounded cursor-pointer">Save Address</button>
           </div>
         </div>
       )}

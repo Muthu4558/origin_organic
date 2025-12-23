@@ -62,8 +62,7 @@ const HeroExact = () => {
             </p>
 
             <p className="mt-6 max-w-lg mx-auto lg:mx-0 text-[#3b7b3b]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam
-              nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+              100% natural, chemical-free products from trusted farms. Eat pure. Live healthy. Choose Origin Organic.
             </p>
 
             <div className="mt-8 flex gap-4 justify-center lg:justify-start">
