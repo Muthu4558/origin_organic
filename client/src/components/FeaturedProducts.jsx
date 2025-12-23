@@ -105,7 +105,7 @@ const FeaturedProducts = () => {
                       initNavigation(key);
                     }}
                     aria-label="Previous"
-                    className="p-3 rounded-full bg-white shadow hover:shadow-md"
+                    className="p-3 rounded-full bg-white shadow hover:shadow-md cursor-pointer"
                   >
                     <IoIosArrowBack size={18} />
                   </button>
@@ -116,7 +116,7 @@ const FeaturedProducts = () => {
                       initNavigation(key);
                     }}
                     aria-label="Next"
-                    className="p-3 rounded-full bg-white shadow hover:shadow-md"
+                    className="p-3 rounded-full bg-white shadow hover:shadow-md cursor-pointer"
                   >
                     <IoIosArrowForward size={18} />
                   </button>

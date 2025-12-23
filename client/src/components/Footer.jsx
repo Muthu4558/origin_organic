@@ -62,7 +62,7 @@ const Footer = () => {
             <p className="flex items-start gap-2 text-gray-400 text-sm mb-2">
               <MdLocationPin className="text-[#57b957] mt-1" />
               <span>
-                MAM Nagar, Siruganur, Trichy - 600 018
+                MAM Nagar, Siruganur, Trichy, <br /> 600 018
               </span>
             </p>
 

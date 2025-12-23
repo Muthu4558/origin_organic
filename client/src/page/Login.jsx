@@ -126,8 +126,8 @@ const Login = () => {
           <div className="max-w-md mx-auto">
             <div className="text-center mb-4">
               <div className="inline-flex items-center justify-center mb-3 w-14 h-14 rounded-full bg-[#f2f7f2] mx-auto lg:hidden">
-  <img src={Logo} alt="logo" className="w-20" />
-</div>
+                <img src={Logo} alt="logo" className="w-20" />
+              </div>
 
               <h1 className="text-2xl font-extrabold text-gray-900">Login in to <span className="text-[#57b957]">your account</span></h1>
               <p className="text-sm text-gray-500 mt-1">Use your registered email to continue.</p>

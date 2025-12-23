@@ -119,21 +119,21 @@ const Navbar = () => {
                     className="absolute left-0 mt-2 w-44 bg-white rounded-xl shadow-lg border overflow-hidden z-30"
                   >
                     {[["All Products", "/products/all-products"],
-                      ["Masala Items", "/products/masala"],
-                      ["Milk Products", "/products/milk"],
-                      ["Nuts", "/products/nuts"],
-                      ["Oils", "/products/oils"],
-                      ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
-                        <li key={path}>
-                          <Link
-                            to={path}
-                            className={`block px-4 py-2 hover:bg-green-200 ${isActive(path) ? "bg-green-100 font-semibold" : ""
-                              }`}
-                          >
-                            {label}
-                          </Link>
-                        </li>
-                      ))}
+                    ["Masala Items", "/products/masala"],
+                    ["Milk Products", "/products/milk"],
+                    ["Nuts", "/products/nuts"],
+                    ["Oils", "/products/oils"],
+                    ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
+                      <li key={path}>
+                        <Link
+                          to={path}
+                          className={`block px-4 py-2 hover:bg-green-200 ${isActive(path) ? "bg-green-100 font-semibold" : ""
+                            }`}
+                        >
+                          {label}
+                        </Link>
+                      </li>
+                    ))}
                   </motion.ul>
                 )}
               </AnimatePresence>
@@ -236,21 +236,21 @@ const Navbar = () => {
                         className="pl-4 mt-2 space-y-2"
                       >
                         {[["All Products", "/products/all-products"],
-                          ["Masala Items", "/products/masala"],
-                          ["Milk Products", "/products/milk"],
-                          ["Nuts", "/products/nuts"],
-                          ["Oils", "/products/oils"],
-                          ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
-                            <li key={path}>
-                              <Link
-                                to={path}
-                                className={isActive(path) ? "text-[#57b957] font-semibold" : ""}
-                                onClick={() => setMenuOpen(false)}
-                              >
-                                {label}
-                              </Link>
-                            </li>
-                          ))}
+                        ["Masala Items", "/products/masala"],
+                        ["Milk Products", "/products/milk"],
+                        ["Nuts", "/products/nuts"],
+                        ["Oils", "/products/oils"],
+                        ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
+                          <li key={path}>
+                            <Link
+                              to={path}
+                              className={isActive(path) ? "text-[#57b957] font-semibold" : ""}
+                              onClick={() => setMenuOpen(false)}
+                            >
+                              {label}
+                            </Link>
+                          </li>
+                        ))}
                       </motion.ul>
                     )}
                   </AnimatePresence>
