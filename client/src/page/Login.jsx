@@ -118,7 +118,7 @@ const Login = () => {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl bg-transparent max-h-[90vh] flex"
+        className="w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl bg-transparent max-h-[95vh] flex"
         aria-live="polite"
       >
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-18 h-full">
