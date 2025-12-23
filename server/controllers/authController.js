@@ -2,6 +2,9 @@
   import bcrypt from "bcryptjs";
   import User from "../models/User.js";
   import { OAuth2Client } from "google-auth-library";
+  import crypto from "crypto";
+import nodemailer from "nodemailer";
+
 
   const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -11,44 +14,79 @@
     });
   };
 
+  // verification email setup
+  const sendVerificationEmail = async (email, token) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const link = `${process.env.CLIENT_URL}/verify-email/${token}`;
+
+  await transporter.sendMail({
+    to: email,
+    subject: "Verify your email",
+    html: `
+      <h2>Email Verification</h2>
+      <p>Please click the link below to verify your email:</p>
+      <a href="${link}">${link}</a>
+    `,
+  });
+};
+
   // Register
   export const registerUser = async (req, res) => {
-    const { name, number, email, password, isAdmin = false } = req.body;
+  const { name, number, email, password, isAdmin = false } = req.body;
 
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail)
-      return res.status(400).json({ message: "Email already in use" });
+  const existingEmail = await User.findOne({ email });
+  if (existingEmail)
+    return res.status(400).json({ message: "Email already in use" });
 
-    const existingNumber = await User.findOne({ number });
-    if (existingNumber)
-      return res.status(400).json({ message: "Phone number already in use" });
+  const existingNumber = await User.findOne({ number });
+  if (existingNumber)
+    return res.status(400).json({ message: "Phone number already in use" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      number,
-      email,
-      password: hashedPassword,
-      isAdmin,
-    });
+  const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    const token = generateToken(user._id, user.isAdmin);
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+  await User.create({
+    name,
+    number,
+    email,
+    password: hashedPassword,
+    isAdmin,
+    isVerified: false,
+    verificationToken,
+  });
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      number: user.number,
-      email: user.email,
-      isAdmin: user.isAdmin,
-    });
-  };
+  await sendVerificationEmail(email, verificationToken);
+
+  res.status(201).json({
+    message: "Verification email sent. Please verify before login.",
+  });
+};
+
+export const verifyEmail = async (req, res) => {
+  const user = await User.findOne({
+    verificationToken: req.params.token,
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  await user.save();
+
+  res.json({ message: "Email verified successfully" });
+};
+
+
 
   // google login
   export const googleAuth = async (req, res) => {
@@ -73,6 +111,12 @@
         isAdmin: false,
       });
     }
+
+    // ✅ AUTO-VERIFY GOOGLE USERS
+user.isVerified = true;
+user.verificationToken = undefined;
+await user.save();
+
 
     const jwtToken = generateToken(user._id, user.isAdmin);
 
@@ -102,6 +146,12 @@
     const user = await User.findOne({ email });
     if (!user)
       return res.status(400).json({ message: "Invalid credentials" });
+
+    if (!user.isVerified) {
+  return res.status(403).json({
+    message: "Please verify your email before logging in",
+  });
+}
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)

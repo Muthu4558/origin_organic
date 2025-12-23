@@ -19,11 +19,16 @@ const userSchema = new mongoose.Schema(
     number: { type: Number, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    addresses: [addressSchema], // ✅ MULTIPLE ADDRESSES
+
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
+
+    addresses: [addressSchema],
     isAdmin: { type: Boolean, default: false },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },
   { timestamps: true }
 );
+
 
 export default mongoose.model("User", userSchema);

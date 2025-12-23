@@ -25,6 +25,7 @@ import DiabeticsMix from "./page/Diabetics-mix";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Shipping from "./components/Shipping";
 import Terms from "./components/Terms";
+import VerifyEmail from "./page/VerifyEmail";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -38,6 +39,7 @@ const AppContent = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Signup />} />
+                <Route path="/verify-email/:token" element={<VerifyEmail />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/shipping" element={<Shipping />} />
                 <Route path="/terms" element={<Terms />} />

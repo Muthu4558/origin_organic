@@ -43,7 +43,7 @@ const Signup = () => {
       await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/register`, form, {
         withCredentials: true,
       });
-      toast.success("Signup successful!");
+      toast.success("Verification email sent. Please verify before login.");
       setTimeout(() => navigate("/login"), 900);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Signup failed");

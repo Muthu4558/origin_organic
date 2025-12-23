@@ -7,7 +7,8 @@ import {
   updateProfile, 
   addAddress,
   deleteAddress,
-  updateAddress
+  updateAddress,
+  verifyEmail 
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { googleAuth } from "../controllers/authController.js";
@@ -15,6 +16,7 @@ import { googleAuth } from "../controllers/authController.js";
 const router = express.Router();
 
 router.post("/register", registerUser);
+router.get("/verify-email/:token", verifyEmail);
 router.post("/google", googleAuth);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
