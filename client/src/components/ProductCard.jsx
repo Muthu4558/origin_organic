@@ -4,14 +4,11 @@ import { motion } from "framer-motion";
 import { FaShoppingCart, FaEye, FaStar } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 
-/* ✅ SAFE unit resolver (keeps old products working) */
+/* unit resolver */
 const resolveUnit = (product) => {
   if (product?.unit) return product.unit;
-
-  if (["Masala Items", "Nuts", "Diabetics Mix"].includes(product?.category)) {
+  if (["Masala Items", "Nuts", "Diabetics Mix"].includes(product?.category))
     return "kg";
-  }
-
   return "litre";
 };
 
@@ -20,7 +17,6 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const [justAdded, setJustAdded] = useState(false);
 
-  /* ----------------- BASIC DATA ----------------- */
   const imageUrl = product?.image
     ? `${import.meta.env.VITE_APP_BASE_URL}/uploads/${product.image}`
     : "/placeholder-product.png";
@@ -35,77 +31,70 @@ const ProductCard = ({ product }) => {
       ? Math.round(((msrp - price) / msrp) * 100)
       : 0;
 
-  /* ----------------- STOCK LOGIC ----------------- */
   const stock = product?.stock ?? 0;
   const isOutOfStock = stock <= 0;
 
-  /* ----------------- HANDLERS ----------------- */
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-
     addToCart(product);
     setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1200);
+    setTimeout(() => setJustAdded(false), 900);
   };
 
   return (
     <motion.article
-      className="w-full max-w-[360px] mx-auto h-full"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ translateY: -2 }}
-      transition={{ duration: 0.25 }}
+      // whileHover={{ y: -8 }}
+      transition={{ duration: 0.3 }}
+      className="w-full max-w-[340px] mx-auto"
     >
-      {/* CARD */}
-      <div className="relative h-full rounded-2xl bg-white overflow-hidden p-1 flex flex-col transition">
+      <div className="relative rounded-3xl overflow-hidden bg-black group">
+
         {/* IMAGE */}
-        <div className="relative">
-          <motion.img
-            src={imageUrl}
-            alt={product?.name}
-            loading="lazy"
-            className="w-full h-64 object-cover rounded-2xl"
-            whileHover={{ scale: 1.03 }}
-            transition={{ duration: 0.5 }}
-          />
+        <img
+          src={imageUrl}
+          alt={product?.name}
+          className="w-full h-[420px] object-cover transition-transform duration-700 group-hover:scale-110"
+        />
 
-          {/* DISCOUNT BADGE */}
-          {discount > 0 && !isOutOfStock && (
-            <span className="absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full text-white bg-gradient-to-r from-[#4aa649] to-[#71ce6e] shadow">
-              {discount}% OFF
-            </span>
-          )}
+        {/* DARK GRADIENT */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-          {/* OUT OF STOCK OVERLAY */}
-          {isOutOfStock && (
-            <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-2xl">
-              <span className="text-red-600 font-bold text-lg">
-                Out of Stock
-              </span>
-            </div>
-          )}
-
-          {/* VIEW BUTTON */}
+        {/* TOP ACTIONS */}
+        <div className="absolute top-4 right-4 flex gap-2">
           <button
             onClick={() => navigate(`/products/${product?._id}`)}
-            className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-white/90 shadow flex items-center justify-center hover:scale-105 transition cursor-pointer"
+            className="w-10 h-10 rounded-full bg-[#57b957] text-white flex items-center justify-center cursor-pointer"
           >
             <FaEye />
           </button>
         </div>
 
-        {/* CONTENT */}
-        <div className="p-4 flex flex-col flex-1">
+        {/* DISCOUNT */}
+        {discount > 0 && !isOutOfStock && (
+          <span className="absolute top-4 left-4 bg-[#57b957] text-white text-xs font-bold px-3 py-1 rounded-full">
+            {discount}% OFF
+          </span>
+        )}
+
+        {/* OUT OF STOCK */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+            <span className="text-red-600 font-bold text-xl">
+              Out of Stock
+            </span>
+          </div>
+        )}
+
+        {/* CONTENT OVER IMAGE */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+          
           {/* NAME */}
-          <h3
-            className="text-lg font-semibold truncate"
-            title={product?.name}
-          >
+          <h3 className="text-xl font-bold leading-tight truncate">
             {product?.name}
           </h3>
 
           {/* RATING */}
-          <div className="mt-2 flex items-center gap-1 text-yellow-400">
+          <div className="flex items-center gap-1 mt-1 text-yellow-400 text-sm">
             {Array.from({ length: 5 }).map((_, i) => (
               <FaStar
                 key={i}
@@ -115,85 +104,46 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* DESCRIPTION */}
-          <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+          {/* <p className="mt-2 text-sm text-white/80 line-clamp-2">
             {product?.description}
-          </p>
+          </p> */}
 
-          {/* STOCK INFO */}
-          <div className="mt-2 text-sm">
-            {isOutOfStock ? (
-              <span className="text-red-600 font-semibold">
-                Out of Stock
-              </span>
-            ) : (
-              <span className="text-green-600">
-                Available: {stock}
-              </span>
-            )}
-          </div>
-
-          {/* PRICE + ACTIONS */}
-          <div className="mt-auto pt-4 flex items-center justify-between gap-3">
-            {/* PRICE */}
+          {/* PRICE + CTA */}
+          <div className="mt-4 flex items-center justify-between gap-3">
             <div>
-              {msrp > price ? (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm text-gray-400 line-through">
-                    ₹{msrp}
-                  </span>
-                  <span className="text-xl font-bold text-gray-900">
-                    ₹{price}
-                    <span className="text-sm font-medium text-gray-500">
-                      {" "} / {unit}
-                    </span>
-                  </span>
-                </div>
-              ) : (
-                <span className="text-xl font-bold text-gray-900">
-                  ₹{price}
-                  <span className="text-sm font-medium text-gray-500">
-                    {" "} / {unit}
-                  </span>
+              {msrp > price && (
+                <span className="text-xs line-through text-[#57b957]">
+                  ₹{msrp}
                 </span>
               )}
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="flex items-center gap-2">
-              <motion.button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                whileTap={{ scale: isOutOfStock ? 1 : 0.96 }}
-                className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow cursor-pointer
-                  ${isOutOfStock
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#4aa649] to-[#71ce6e]"
-                  }`}
-              >
-                <FaShoppingCart />
-                <span className="hidden sm:inline">
-                  {isOutOfStock ? "Unavailable" : "Add"}
+              <div className="text-2xl font-extrabold">
+                ₹{price}
+                <span className="text-sm font-medium text-[#57b957]">
+                  {" "} / {unit}
                 </span>
-
-                {justAdded && (
-                  <motion.span
-                    initial={{ opacity: 0, y: 6, scale: 0.6 }}
-                    animate={{ opacity: 1, y: -16, scale: 1 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute -top-3 right-2 text-xs font-bold bg-white text-gray-800 rounded-full px-2 py-0.5 shadow"
-                  >
-                    +1
-                  </motion.span>
-                )}
-              </motion.button>
-
-              <button
-                onClick={() => navigate(`/products/${product?._id}`)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer"
-              >
-                Details
-              </button>
+              </div>
             </div>
+
+            <motion.button
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              whileTap={{ scale: 0.92 }}
+              className={`relative flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold
+                ${
+                  isOutOfStock
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-[#57b957] text-white cursor-pointer hover:bg-green-600 transition"
+                }`}
+            >
+              <FaShoppingCart />
+              Add
+
+              {justAdded && (
+                <span className="absolute -top-2 -right-2 bg-black text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  +1
+                </span>
+              )}
+            </motion.button>
           </div>
         </div>
       </div>

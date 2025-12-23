@@ -259,6 +259,24 @@ const Navbar = () => {
                 >
                   My Order
                 </Link>
+
+                {/* MOBILE LOGIN / LOGOUT */}
+                {isAuthed ? (
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full px-4 py-2 rounded-md bg-gray-100 text-gray-800 text-center"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="block w-full px-4 py-2 rounded-md border text-center hover:bg-green-50"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                )}
               </div>
             </motion.div>
           )}

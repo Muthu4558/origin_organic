@@ -60,7 +60,7 @@ const Login = () => {
         navigate(from, { replace: true });
       } else {
         if (res.data.isAdmin) navigate("/admin", { replace: true });
-        else navigate("/profile", { replace: true });
+        else navigate("/", { replace: true });
       }
     } catch (error) {
       const msg = error?.response?.data?.message || "Login failed. Check credentials.";
