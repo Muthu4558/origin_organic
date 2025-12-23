@@ -6,6 +6,7 @@ import { FaCartPlus } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Logo from "../assets/logo.png";
+import { useCart } from "../context/CartContext";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -18,6 +19,9 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { pathname } = location;
+
+  const { cartItems } = useCart();
+  const cartCount = cartItems?.length || 0;
 
   const isActive = (path) => pathname === path;
   const isProducts = pathname.startsWith("/products");
@@ -114,24 +118,22 @@ const Navbar = () => {
                     exit={{ opacity: 0, y: -6 }}
                     className="absolute left-0 mt-2 w-44 bg-white rounded-xl shadow-lg border overflow-hidden z-30"
                   >
-                    {[
-                      ["All Products", "/products/all-products"],
+                    {[["All Products", "/products/all-products"],
                       ["Masala Items", "/products/masala"],
                       ["Milk Products", "/products/milk"],
                       ["Nuts", "/products/nuts"],
                       ["Oils", "/products/oils"],
-                      ["Diabetics Mix", "/products/diabetics-mix"],
-                    ].map(([label, path]) => (
-                      <li key={path}>
-                        <Link
-                          to={path}
-                          className={`block px-4 py-2 hover:bg-green-200 ${isActive(path) ? "bg-green-100 font-semibold" : ""
-                            }`}
-                        >
-                          {label}
-                        </Link>
-                      </li>
-                    ))}
+                      ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
+                        <li key={path}>
+                          <Link
+                            to={path}
+                            className={`block px-4 py-2 hover:bg-green-200 ${isActive(path) ? "bg-green-100 font-semibold" : ""
+                              }`}
+                          >
+                            {label}
+                          </Link>
+                        </li>
+                      ))}
                   </motion.ul>
                 )}
               </AnimatePresence>
@@ -148,26 +150,37 @@ const Navbar = () => {
 
           {/* RIGHT */}
           <div className="flex items-center gap-3">
+            {/* CART BUTTON WITH BADGE */}
             <Link
               to="/cart"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#57b957] text-white"
+              className="relative flex items-center gap-2 px-3 py-2 rounded-lg bg-[#57b957] text-white"
             >
               <FaCartPlus size={16} /> Cart
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
+            {/* DESKTOP LOGIN / LOGOUT */}
             {isAuthed ? (
               <button
                 onClick={handleLogout}
-                className="hidden lg:inline-block px-4 py-2 rounded-md bg-white border cursor-pointer"
+                className="hidden lg:inline-block px-4 py-2 rounded-md bg-white border text-gray-800 hover:bg-gray-100 transition"
               >
                 Logout
               </button>
             ) : (
-              <Link to="/login" className="hidden lg:inline-block px-4 py-2 border rounded-md">
+              <Link
+                to="/login"
+                className="hidden lg:inline-block px-4 py-2 border rounded-md hover:bg-green-50 transition"
+              >
                 Login
               </Link>
             )}
 
+            {/* MOBILE MENU TOGGLE */}
             <button
               onClick={() => setMenuOpen((s) => !s)}
               className="md:hidden p-2 rounded-md bg-white"
@@ -177,7 +190,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* 🔹 MOBILE MENU — SAME AS OLD CODE (ONLY ACTIVE COLOR ADDED) */}
+        {/* MOBILE MENU */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -203,6 +216,7 @@ const Navbar = () => {
                   About
                 </Link>
 
+                {/* MOBILE PRODUCTS DROPDOWN */}
                 <div>
                   <button
                     onClick={() => setMobileDropdown((s) => !s)}
@@ -221,24 +235,22 @@ const Navbar = () => {
                         exit={{ height: 0, opacity: 0 }}
                         className="pl-4 mt-2 space-y-2"
                       >
-                        {[
-                          ["All Products", "/products/all-products"],
+                        {[["All Products", "/products/all-products"],
                           ["Masala Items", "/products/masala"],
                           ["Milk Products", "/products/milk"],
                           ["Nuts", "/products/nuts"],
                           ["Oils", "/products/oils"],
-                          ["Diabetics Mix", "/products/diabetics-mix"],
-                        ].map(([label, path]) => (
-                          <li key={path}>
-                            <Link
-                              to={path}
-                              className={isActive(path) ? "text-[#57b957] font-semibold" : ""}
-                              onClick={() => setMenuOpen(false)}
-                            >
-                              {label}
-                            </Link>
-                          </li>
-                        ))}
+                          ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
+                            <li key={path}>
+                              <Link
+                                to={path}
+                                className={isActive(path) ? "text-[#57b957] font-semibold" : ""}
+                                onClick={() => setMenuOpen(false)}
+                              >
+                                {label}
+                              </Link>
+                            </li>
+                          ))}
                       </motion.ul>
                     )}
                   </AnimatePresence>

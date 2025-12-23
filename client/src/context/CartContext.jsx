@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useState, useRef } from "react";
+import React, { createContext, useContext, useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useLoading } from "./LoadingContext";
 
 const CartContext = createContext();
-
 export const useCart = () => useContext(CartContext);
 
 const safeJson = async (res) => {
@@ -19,8 +18,19 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const { startLoading, stopLoading } = useLoading();
   const navigate = useNavigate();
-
   const controllerRef = useRef(null);
+
+  // ✅ Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem("cartItems");
+    if (savedCart) setCartItems(JSON.parse(savedCart));
+    else fetchCart({ showLoader: false }); // fetch from API if nothing in localStorage
+  }, []);
+
+  // ✅ Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const fetchCart = async (opts = { showLoader: false }) => {
     if (controllerRef.current) controllerRef.current.abort();
@@ -45,9 +55,7 @@ export const CartProvider = ({ children }) => {
       const data = await res.json();
       setCartItems(data.items || []);
     } catch (err) {
-      if (err.name !== "AbortError") {
-        toast.error("Failed to load cart");
-      }
+      if (err.name !== "AbortError") toast.error("Failed to load cart");
     } finally {
       if (opts.showLoader) stopLoading();
     }
@@ -59,10 +67,7 @@ export const CartProvider = ({ children }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          productId: product._id,
-          quantity,
-        }),
+        body: JSON.stringify({ productId: product._id, quantity }),
       });
 
       if (res.status === 401) {
@@ -87,10 +92,7 @@ export const CartProvider = ({ children }) => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_APP_BASE_URL}/api/cart/remove/${productId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
+        { method: "DELETE", credentials: "include" }
       );
 
       if (!res.ok) throw new Error();
@@ -120,7 +122,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const checkoutCart = () => {
-    navigate("/checkout");   // ✅ JUST NAVIGATE
+    navigate("/checkout");
   };
 
   return (

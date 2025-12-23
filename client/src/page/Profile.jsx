@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import Loader from "../components/Loader";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -27,10 +28,8 @@ const Profile = () => {
     email: "",
   });
 
-  // 🔹 ADDRESS STATE (NEW)
   const [addresses, setAddresses] = useState([]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-
   const [addressForm, setAddressForm] = useState({
     street: "",
     landmark: "",
@@ -41,7 +40,6 @@ const Profile = () => {
     pincode: "",
   });
 
-  // 🔹 EDIT PROFILE STATE (EXISTING)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -49,10 +47,13 @@ const Profile = () => {
     email: "",
   });
 
+  const [loading, setLoading] = useState(true); // ✅ Local loader state
+
   // ================= FETCH PROFILE =================
   const fetchProfile = async () => {
     try {
-      startLoading();
+      setLoading(true); // start local loader
+      startLoading(); // optional global loader if needed
       const res = await axios.get(
         `${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`,
         { withCredentials: true }
@@ -60,10 +61,11 @@ const Profile = () => {
 
       setProfile(res.data);
       setFormData(res.data);
-      setAddresses(res.data.addresses || []); // ✅ ONLY ADDITION
+      setAddresses(res.data.addresses || []);
     } catch (err) {
       navigate("/login");
     } finally {
+      setLoading(false); // stop local loader
       stopLoading();
     }
   };
@@ -81,7 +83,6 @@ const Profile = () => {
         { withCredentials: true }
       );
 
-      // ✅ MERGE, DO NOT REPLACE
       setProfile((prev) => ({
         ...prev,
         ...res.data,
@@ -94,7 +95,6 @@ const Profile = () => {
       toast.error("Profile update failed");
     }
   };
-
 
   // ================= LOGOUT =================
   const handleLogout = async () => {
@@ -139,6 +139,9 @@ const Profile = () => {
     );
     setAddresses(res.data);
   };
+
+  // ✅ Show loader if profile is being fetched
+  if (loading) return <Loader />;
 
   return (
     <>
@@ -187,7 +190,7 @@ const Profile = () => {
                 <p><b>Phone:</b> {profile.number}</p>
                 <p><b>Email:</b> {profile.email}</p>
 
-                {/* ================= ADDRESS SECTION (ONLY NEW UI) ================= */}
+                {/* ADDRESS SECTION */}
                 <div className="mt-6">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold">Addresses</h3>
@@ -229,7 +232,7 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* ================= EDIT PROFILE MODAL (UNCHANGED) ================= */}
+      {/* EDIT PROFILE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
@@ -282,7 +285,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* ================= ADD ADDRESS MODAL ================= */}
+      {/* ADD ADDRESS MODAL */}
       {isAddressModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
