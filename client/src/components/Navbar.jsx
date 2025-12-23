@@ -14,7 +14,7 @@ const Navbar = () => {
   const lastScrollY = useRef(0);
   const [desktopDropdown, setDesktopDropdown] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState(false);
-  const [isAuthed, setIsAuthed] = useState(Boolean(localStorage.getItem("token")));
+  const [isAuthed, setIsAuthed] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,7 +33,6 @@ const Navbar = () => {
     setMenuOpen(false);
     setDesktopDropdown(false);
     setMobileDropdown(false);
-    setIsAuthed(Boolean(localStorage.getItem("token")));
   }, [location]);
 
   useEffect(() => {
@@ -59,6 +58,23 @@ const Navbar = () => {
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await axios.get(
+          `${import.meta.env.VITE_APP_BASE_URL}/api/auth/verify`,
+          { withCredentials: true }
+        );
+        setIsAuthed(true);
+      } catch {
+        setIsAuthed(false);
+      }
+    };
+
+    checkAuth();
+  }, [location.pathname]);
+
+
   const handleLogout = async () => {
     try {
       await axios.post(
@@ -68,8 +84,6 @@ const Navbar = () => {
       );
     } catch { }
     finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("isAdmin");
       setIsAuthed(false);
       toast.success("Logged out successfully");
       navigate("/login", { replace: true });

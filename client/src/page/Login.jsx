@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import LeftImg from "../assets/Login.png";
 import Logo from "../assets/logo.png";
 import { useCart } from "../context/CartContext"; // <- added
+import { GoogleLogin } from "@react-oauth/google";
 
 const BRAND = "#57b957";
 
@@ -70,6 +71,38 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      setLoading(true);
+
+      await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/auth/google`,
+        { token: credentialResponse.credential },
+        { withCredentials: true }
+      );
+
+      toast.success("Logged in with Google");
+
+      // refresh cart
+      if (typeof fetchCart === "function") {
+        await fetchCart();
+      }
+
+      // redirect
+      if (from) {
+        navigate(from, { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   React.useEffect(() => {
     const rem = localStorage.getItem("rememberEmail");
     if (rem) {
@@ -88,7 +121,7 @@ const Login = () => {
         className="w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl bg-transparent max-h-[90vh] flex"
         aria-live="polite"
       >
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-6 h-full">
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-18 mb-2">
           <div className="max-w-xs text-center overflow-auto">
             <div className="flex justify-center mb-10">
               <img width={200} src={Logo} alt="img" />
@@ -98,14 +131,19 @@ const Login = () => {
               Sign in to continue — fast checkout, order tracking and personalised recommendations.
             </p>
 
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="mt-6 flex justify-center gap-3">
               <button
-                onClick={() => toast.info("Social sign-in not configured")}
-                className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
+                // onClick={() => toast.info("Social sign-in not configured")}
+                // className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
               >
-                <FaGoogle className="text-red-500" /> Sign in with Google
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => toast.error("Google login failed")}
+                  useOneTap={false}
+                />
+
               </button>
-              <button
+              {/* <button
                 onClick={() => toast.info("Social sign-in not configured")}
                 className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
               >
@@ -116,7 +154,7 @@ const Login = () => {
                 className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-black text-white hover:shadow transition"
               >
                 <FaApple /> Sign in with Apple
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -226,24 +264,16 @@ const Login = () => {
               <div className="flex-1 h-[1px] bg-gray-100" />
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="mt-4 flex justify-center lg:hidden">
               <button
-                onClick={() => toast.info("Social sign-in not configured")}
-                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
+                // onClick={() => toast.info("Social sign-in not configured")}
+                // className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
               >
-                <FaGoogle className="text-red-500" /> <span className="text-xs">Google</span>
-              </button>
-              <button
-                onClick={() => toast.info("Social sign-in not configured")}
-                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
-              >
-                <FaFacebookF className="text-blue-600" /> <span className="text-xs">Facebook</span>
-              </button>
-              <button
-                onClick={() => toast.info("Social sign-in not configured")}
-                className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition bg-black text-white"
-              >
-                <FaApple /> <span className="text-xs">Apple</span>
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => toast.error("Google login failed")}
+                  useOneTap={false}
+                />
               </button>
             </div>
 

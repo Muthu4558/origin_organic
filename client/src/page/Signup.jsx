@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import LeftImg from "../assets/Login.png";
 import Logo from "../assets/logo.png";
+import { GoogleLogin } from "@react-oauth/google";
 
 const BRAND = "#57b957";
 
@@ -60,7 +61,7 @@ const Signup = () => {
         className="w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-transparent flex flex-col lg:flex-row min-h-[600px]"
       >
         {/* Left Side (Illustration + Info) */}
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-6">
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-4">
           <div className="max-w-xs text-center">
             <img src={Logo} alt="illustration" className="w-64 mx-auto mb-6" />
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
@@ -70,14 +71,31 @@ const Signup = () => {
               Create an account to save favorites, track orders, and enjoy exclusive offers!
             </p>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex justify-center gap-3">
               <button
-                onClick={() => toast.info("Social signup not configured")}
-                className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
+                // onClick={() => toast.info("Social signup not configured")}
+                // className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
               >
-                <FaGoogle className="text-red-500" /> Continue with Google
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    try {
+                      const res = await axios.post(
+                        `${import.meta.env.VITE_APP_BASE_URL}/api/auth/google`,
+                        { token: credentialResponse.credential },
+                        { withCredentials: true }
+                      );
+
+                      toast.success("Google signup successful!");
+                      navigate("/");
+                    } catch (err) {
+                      toast.error("Google signup failed");
+                    }
+                  }}
+                  onError={() => toast.error("Google login failed")}
+                />
+                {/* Continue with Google */}
               </button>
-              <button
+              {/* <button
                 onClick={() => toast.info("Social signup not configured")}
                 className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-white hover:shadow transition"
               >
@@ -88,7 +106,7 @@ const Signup = () => {
                 className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-black text-white hover:shadow transition"
               >
                 <FaApple /> Continue with Apple
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -232,6 +250,37 @@ const Signup = () => {
                   "Create Account"
                 )}
               </motion.button>
+
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex-1 h-[1px] bg-gray-100" />
+                <div className="text-xs text-gray-400">or</div>
+                <div className="flex-1 h-[1px] bg-gray-100" />
+              </div>
+
+              <div className="mt-4 flex justify-center lg:hidden">
+                <button
+                // onClick={() => toast.info("Social sign-in not configured")}
+                // className="flex items-center justify-center gap-2 py-2 rounded-lg border border-gray-100 hover:shadow transition"
+                >
+                  <GoogleLogin
+                    onSuccess={async (credentialResponse) => {
+                      try {
+                        const res = await axios.post(
+                          `${import.meta.env.VITE_APP_BASE_URL}/api/auth/google`,
+                          { token: credentialResponse.credential },
+                          { withCredentials: true }
+                        );
+
+                        toast.success("Google signup successful!");
+                        navigate("/");
+                      } catch (err) {
+                        toast.error("Google signup failed");
+                      }
+                    }}
+                    onError={() => toast.error("Google login failed")}
+                  />
+                </button>
+              </div>
 
               <p className="mt-6 text-center text-sm text-gray-500">
                 Already have an account?{" "}
