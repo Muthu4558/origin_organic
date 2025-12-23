@@ -121,7 +121,7 @@ const Login = () => {
         className="w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl bg-transparent max-h-[90vh] flex"
         aria-live="polite"
       >
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-18 mb-2">
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-[linear-gradient(135deg,#eef8ef,#ffffff)] p-18 h-full">
           <div className="max-w-xs text-center overflow-auto">
             <div className="flex justify-center mb-10">
               <img width={200} src={Logo} alt="img" />
