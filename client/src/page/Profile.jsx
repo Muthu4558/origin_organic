@@ -165,7 +165,7 @@ const Profile = () => {
 
       {/* EDIT PROFILE MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
           <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-3 right-3"><FaTimes /></button>
             <h3 className="text-lg font-semibold mb-3">Edit Profile</h3>
@@ -183,7 +183,7 @@ const Profile = () => {
 
       {/* ADD ADDRESS MODAL */}
       {isAddressModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
           <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
             <button onClick={() => setIsAddressModalOpen(false)} className="absolute top-3 right-3"><FaTimes /></button>
             <h3 className="font-semibold mb-3">Add Address</h3>
