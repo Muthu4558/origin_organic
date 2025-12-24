@@ -174,114 +174,109 @@ const Oils = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 mb-15">
         {/* FILTER BOX */}
         <section
-          id="filters"
-          className="bg-white/70 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-md border border-[#57b957]"
+  id="filters"
+  className="bg-white/70 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-md border border-[#57b957]"
+>
+  <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
+    {/* SEARCH + DESKTOP SELECTS */}
+    <div className="w-full lg:w-1/2 flex flex-col sm:flex-row gap-3">
+      {/* SEARCH */}
+      <div className="relative flex-1">
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search oils..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-[#cfe3d0] focus:outline-none"
+        />
+      </div>
+
+      {/* DESKTOP PRICE + SORT */}
+      <div className="hidden sm:flex gap-3">
+        <select
+          value={priceRange}
+          onChange={(e) => setPriceRange(e.target.value)}
+          className="px-4 py-2 rounded-full border border-gray-200 bg-white"
         >
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-            {/* SEARCH BAR */}
-            <div className="w-full lg:w-1/2 flex items-center gap-3">
-              <div className="relative flex-1">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search oils..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-[#cfe3d0] focus:outline-none"
-                />
-              </div>
+          <option value="all">All prices</option>
+          <option value="0-250">₹0 - ₹250</option>
+          <option value="250-500">₹250 - ₹500</option>
+          <option value="500-1000">₹500 - ₹1000</option>
+          <option value="1000-999999">₹1000+</option>
+        </select>
 
-              {/* PRICE + SORT */}
-              <div className="hidden sm:flex items-center gap-3">
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="px-4 py-2 rounded-full border border-gray-200 bg-white"
-                >
-                  <option value="all">All prices</option>
-                  <option value="0-250">₹0 - ₹250</option>
-                  <option value="250-500">₹250 - ₹500</option>
-                  <option value="500-1000">₹500 - ₹1000</option>
-                  <option value="1000-999999">₹1000+</option>
-                </select>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="px-4 py-2 rounded-full border border-gray-200 bg-white"
+        >
+          <option value="">Sort</option>
+          <option value="lowToHigh">Price: Low → High</option>
+          <option value="highToLow">Price: High → Low</option>
+        </select>
+      </div>
+    </div>
 
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="px-4 py-2 rounded-full border border-gray-200 bg-white"
-                >
-                  <option value="">Sort</option>
-                  <option value="lowToHigh">Price: Low → High</option>
-                  <option value="highToLow">Price: High → Low</option>
-                </select>
-              </div>
-            </div>
+    {/* TOGGLES + CLEAR */}
+    <div className="w-full lg:w-auto flex flex-wrap items-center gap-3 lg:ml-auto">
+      <label className="inline-flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={offerOnly}
+          onChange={(e) => setOfferOnly(e.target.checked)}
+          className="form-checkbox h-5 w-5"
+          style={{ accentColor: BRAND }}
+        />
+        <span className="text-sm text-gray-700">Offer only</span>
+      </label>
 
-            {/* FILTER TOGGLES */}
-            <div className="flex items-center gap-3 ml-auto">
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={offerOnly}
-                  onChange={(e) => setOfferOnly(e.target.checked)}
-                  className="form-checkbox h-5 w-5"
-                  style={{ accentColor: BRAND }}
-                />
-                <span className="text-sm text-gray-700">Offer only</span>
-              </label>
+      <label className="inline-flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={featuredOnly}
+          onChange={(e) => setFeaturedOnly(e.target.checked)}
+          className="form-checkbox h-5 w-5"
+          style={{ accentColor: BRAND }}
+        />
+        <span className="text-sm text-gray-700">Featured</span>
+      </label>
 
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={featuredOnly}
-                  onChange={(e) => setFeaturedOnly(e.target.checked)}
-                  className="form-checkbox h-5 w-5"
-                  style={{ accentColor: BRAND }}
-                />
-                <span className="text-sm text-gray-700">Featured</span>
-              </label>
+      <button
+        onClick={clearFilters}
+        className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
+      >
+        <FiRefreshCw className="text-gray-600" /> Clear
+      </button>
+    </div>
+  </div>
 
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
-              >
-                <FiRefreshCw className="text-gray-600" /> Clear
-              </button>
+  {/* MOBILE SELECTS */}
+  <div className="mt-4 flex flex-col sm:hidden gap-3">
+    <select
+      value={priceRange}
+      onChange={(e) => setPriceRange(e.target.value)}
+      className="w-full px-4 py-2 rounded-full border border-gray-200 bg-white"
+    >
+      <option value="all">All prices</option>
+      <option value="0-250">₹0 - ₹250</option>
+      <option value="250-500">₹250 - ₹500</option>
+      <option value="500-1000">₹500 - ₹1000</option>
+      <option value="1000-999999">₹1000+</option>
+    </select>
 
-              {/* Mobile dropdown */}
-              <div className="lg:hidden">
-                <button className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm">
-                  <FiChevronDown />
-                </button>
-              </div>
-            </div>
-          </div>
+    <select
+      value={sortOrder}
+      onChange={(e) => setSortOrder(e.target.value)}
+      className="w-full px-4 py-2 rounded-full border border-gray-200 bg-white"
+    >
+      <option value="">Sort</option>
+      <option value="lowToHigh">Price: Low → High</option>
+      <option value="highToLow">Price: High → Low</option>
+    </select>
+  </div>
+</section>
 
-          {/* Mobile dropdown selects */}
-          <div className="mt-4 lg:hidden flex gap-3">
-            <select
-              value={priceRange}
-              onChange={(e) => setPriceRange(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-full border border-gray-200 bg-white"
-            >
-              <option value="all">All prices</option>
-              <option value="0-250">₹0 - ₹250</option>
-              <option value="250-500">₹250 - ₹500</option>
-              <option value="500-1000">₹500 - ₹1000</option>
-              <option value="1000-999999">₹1000+</option>
-            </select>
-
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="px-3 py-2 rounded-full border border-gray-200 bg-white"
-            >
-              <option value="">Sort</option>
-              <option value="lowToHigh">Price: Low → High</option>
-              <option value="highToLow">Price: High → Low</option>
-            </select>
-          </div>
-        </section>
 
         {/* PRODUCT GRID */}
         <section className="mt-8">
