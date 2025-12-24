@@ -107,39 +107,43 @@ const Oils = () => {
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
           <div className="flex flex-col lg:flex-row items-center gap-8">
             {/* LEFT */}
-            <div className="lg:w-2/3">
+            <div className="w-full lg:w-2/3 text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-gray-900">
                 Explore <span style={{ color: BRAND }}>Oils</span>
               </h1>
-              <p className="mt-4 text-gray-600 max-w-2xl">
+
+              <p className="mt-4 text-gray-600 max-w-2xl mx-auto lg:mx-0">
                 Cold-pressed, wood-pressed, and premium edible oils — pure, natural,
                 chemical-free. Perfect for cooking, wellness, and everyday health.
               </p>
 
               {/* Search + Filter Button */}
-              <div className="mt-6 flex items-center gap-3">
-                <div className="inline-flex items-center gap-2 bg-white/90 border border-gray-100 px-4 py-2 rounded-full shadow-sm">
-                  <FiSearch className="text-gray-400" />
+              <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-3">
+                <div className="flex items-center gap-2 bg-white/90 border border-gray-100 px-4 py-2 rounded-full shadow-sm w-full sm:w-auto">
+                  <FiSearch className="text-gray-400 shrink-0" />
                   <input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search oils, types or brands..."
-                    className="outline-none text-sm placeholder-gray-400 bg-transparent"
+                    className="outline-none text-sm placeholder-gray-400 bg-transparent w-full sm:w-64"
                     aria-label="Search oil products"
                   />
                 </div>
 
                 <button
                   onClick={() =>
-                    document.getElementById("filters")?.scrollIntoView({ behavior: "smooth" })
+                    document
+                      .getElementById("filters")
+                      ?.scrollIntoView({ behavior: "smooth" })
                   }
-                  className="inline-flex items-center gap-2 bg-white border border-gray-100 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition"
+                  className="inline-flex items-center justify-center gap-2 bg-white border border-gray-100 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition w-full sm:w-auto"
                 >
                   <FiFilter className="text-gray-600" />
                   <span className="text-sm text-gray-700">Filters</span>
                 </button>
               </div>
             </div>
+
 
             {/* RIGHT IMAGE */}
             <div className="lg:w-1/3 flex justify-center lg:justify-end">
@@ -174,108 +178,108 @@ const Oils = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 mb-15">
         {/* FILTER BOX */}
         <section
-  id="filters"
-  className="bg-white/70 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-md border border-[#57b957]"
->
-  <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
-    {/* SEARCH + DESKTOP SELECTS */}
-    <div className="w-full lg:w-1/2 flex flex-col sm:flex-row gap-3">
-      {/* SEARCH */}
-      <div className="relative flex-1">
-        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search oils..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-[#cfe3d0] focus:outline-none"
-        />
-      </div>
-
-      {/* DESKTOP PRICE + SORT */}
-      <div className="hidden sm:flex gap-3">
-        <select
-          value={priceRange}
-          onChange={(e) => setPriceRange(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-200 bg-white"
+          id="filters"
+          className="bg-white/70 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-md border border-[#57b957]"
         >
-          <option value="all">All prices</option>
-          <option value="0-250">₹0 - ₹250</option>
-          <option value="250-500">₹250 - ₹500</option>
-          <option value="500-1000">₹500 - ₹1000</option>
-          <option value="1000-999999">₹1000+</option>
-        </select>
+          <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
+            {/* SEARCH + DESKTOP SELECTS */}
+            <div className="w-full lg:w-1/2 flex flex-col sm:flex-row gap-3">
+              {/* SEARCH */}
+              <div className="relative flex-1">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search oils..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-[#cfe3d0] focus:outline-none"
+                />
+              </div>
 
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-200 bg-white"
-        >
-          <option value="">Sort</option>
-          <option value="lowToHigh">Price: Low → High</option>
-          <option value="highToLow">Price: High → Low</option>
-        </select>
-      </div>
-    </div>
+              {/* DESKTOP PRICE + SORT */}
+              <div className="hidden sm:flex gap-3">
+                <select
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="px-4 py-2 rounded-full border border-gray-200 bg-white"
+                >
+                  <option value="all">All prices</option>
+                  <option value="0-250">₹0 - ₹250</option>
+                  <option value="250-500">₹250 - ₹500</option>
+                  <option value="500-1000">₹500 - ₹1000</option>
+                  <option value="1000-999999">₹1000+</option>
+                </select>
 
-    {/* TOGGLES + CLEAR */}
-    <div className="w-full lg:w-auto flex flex-wrap items-center gap-3 lg:ml-auto">
-      <label className="inline-flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={offerOnly}
-          onChange={(e) => setOfferOnly(e.target.checked)}
-          className="form-checkbox h-5 w-5"
-          style={{ accentColor: BRAND }}
-        />
-        <span className="text-sm text-gray-700">Offer only</span>
-      </label>
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  className="px-4 py-2 rounded-full border border-gray-200 bg-white"
+                >
+                  <option value="">Sort</option>
+                  <option value="lowToHigh">Price: Low → High</option>
+                  <option value="highToLow">Price: High → Low</option>
+                </select>
+              </div>
+            </div>
 
-      <label className="inline-flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={featuredOnly}
-          onChange={(e) => setFeaturedOnly(e.target.checked)}
-          className="form-checkbox h-5 w-5"
-          style={{ accentColor: BRAND }}
-        />
-        <span className="text-sm text-gray-700">Featured</span>
-      </label>
+            {/* TOGGLES + CLEAR */}
+            <div className="w-full lg:w-auto flex flex-wrap items-center gap-3 lg:ml-auto">
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={offerOnly}
+                  onChange={(e) => setOfferOnly(e.target.checked)}
+                  className="form-checkbox h-5 w-5"
+                  style={{ accentColor: BRAND }}
+                />
+                <span className="text-sm text-gray-700">Offer only</span>
+              </label>
 
-      <button
-        onClick={clearFilters}
-        className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
-      >
-        <FiRefreshCw className="text-gray-600" /> Clear
-      </button>
-    </div>
-  </div>
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={featuredOnly}
+                  onChange={(e) => setFeaturedOnly(e.target.checked)}
+                  className="form-checkbox h-5 w-5"
+                  style={{ accentColor: BRAND }}
+                />
+                <span className="text-sm text-gray-700">Featured</span>
+              </label>
 
-  {/* MOBILE SELECTS */}
-  <div className="mt-4 flex flex-col sm:hidden gap-3">
-    <select
-      value={priceRange}
-      onChange={(e) => setPriceRange(e.target.value)}
-      className="w-full px-4 py-2 rounded-full border border-gray-200 bg-white"
-    >
-      <option value="all">All prices</option>
-      <option value="0-250">₹0 - ₹250</option>
-      <option value="250-500">₹250 - ₹500</option>
-      <option value="500-1000">₹500 - ₹1000</option>
-      <option value="1000-999999">₹1000+</option>
-    </select>
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
+              >
+                <FiRefreshCw className="text-gray-600" /> Clear
+              </button>
+            </div>
+          </div>
 
-    <select
-      value={sortOrder}
-      onChange={(e) => setSortOrder(e.target.value)}
-      className="w-full px-4 py-2 rounded-full border border-gray-200 bg-white"
-    >
-      <option value="">Sort</option>
-      <option value="lowToHigh">Price: Low → High</option>
-      <option value="highToLow">Price: High → Low</option>
-    </select>
-  </div>
-</section>
+          {/* MOBILE SELECTS */}
+          <div className="mt-4 flex flex-col sm:hidden gap-3">
+            <select
+              value={priceRange}
+              onChange={(e) => setPriceRange(e.target.value)}
+              className="w-full px-4 py-2 rounded-full border border-gray-200 bg-white"
+            >
+              <option value="all">All prices</option>
+              <option value="0-250">₹0 - ₹250</option>
+              <option value="250-500">₹250 - ₹500</option>
+              <option value="500-1000">₹500 - ₹1000</option>
+              <option value="1000-999999">₹1000+</option>
+            </select>
+
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="w-full px-4 py-2 rounded-full border border-gray-200 bg-white"
+            >
+              <option value="">Sort</option>
+              <option value="lowToHigh">Price: Low → High</option>
+              <option value="highToLow">Price: High → Low</option>
+            </select>
+          </div>
+        </section>
 
 
         {/* PRODUCT GRID */}
