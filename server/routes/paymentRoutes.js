@@ -1,12 +1,12 @@
 import express from "express";
 import {
-  createOrder,
-  verifyPayment,
+  createCCAvenueOrder,
+  ccavenueResponse,
 } from "../controllers/paymentController.js";
 
 const router = express.Router();
 
-router.post("/create-order", createOrder);
-router.post("/verify", verifyPayment);
+router.post("/ccavenue-order", createCCAvenueOrder);
+router.post("/ccavenue-response", ccavenueResponse);
 
 export default router;

@@ -17,6 +17,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL.split(","), 
     credentials: true
 }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use('/uploads', express.static('uploads')); 
 app.use(cookieParser());

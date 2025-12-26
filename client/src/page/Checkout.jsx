@@ -8,18 +8,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
-import { motion } from "framer-motion";
 import indiaStates from "../data/indiaStates.json";
-
-/* ---------- Razorpay Loader ---------- */
-const loadRazorpay = () =>
-  new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
 
 const emptyAddress = {
   street: "",
@@ -49,6 +38,7 @@ const Checkout = () => {
   /* ---------- INIT ---------- */
   useEffect(() => {
     fetchCart();
+
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/profile`, {
         withCredentials: true,
@@ -60,11 +50,14 @@ const Checkout = () => {
       .catch(() => navigate("/login"));
   }, []);
 
+  /* ---------- TOTAL ---------- */
   const total = useMemo(
     () =>
       cartItems.reduce(
         (sum, item) =>
-          sum + (item.product.offerPrice ?? item.product.price) * item.quantity,
+          sum +
+          (item.product.offerPrice ?? item.product.price) *
+            item.quantity,
         0
       ),
     [cartItems]
@@ -114,7 +107,7 @@ const Checkout = () => {
     }
   };
 
-  /* ---------- PAYMENT ---------- */
+  /* ---------- CCAvenue PAYMENT ---------- */
   const placeOrder = async () => {
     if (!selectedAddress) return toast.error("Select address");
     if (!cartItems.length) return toast.error("Cart empty");
@@ -122,55 +115,44 @@ const Checkout = () => {
     try {
       setLoading(true);
 
-      const loaded = await loadRazorpay();
-      if (!loaded) {
-        setLoading(false);
-        return toast.error("Razorpay SDK failed");
-      }
+      const orderId = `ORD_${Date.now()}`;
 
-      const orderRes = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/payment/create-order`,
-        { amount: total },
+      const res = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/payment/ccavenue-order`,
+        {
+          orderId,
+          amount: total,
+          name: profile.name,
+          email: profile.email,
+          phone: profile.number,
+        },
         { withCredentials: true }
       );
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderRes.data.amount,
-        currency: "INR",
-        name: "Origin Organic",
-        order_id: orderRes.data.id,
-        handler: async (response) => {
-          try {
-            await axios.post(
-              `${import.meta.env.VITE_APP_BASE_URL}/api/orders/place`,
-              {
-                address: selectedAddress,
-                paymentMethod: "ONLINE",
-                paymentId: response.razorpay_payment_id,
-              },
-              { withCredentials: true }
-            );
-            toast.success("Payment successful");
-            navigate("/thankyou");
-          } catch {
-            toast.error("Order placement failed");
-          } finally {
-            setLoading(false);
-          }
-        },
-        prefill: {
-          name: profile?.name,
-          email: profile?.email,
-          contact: profile?.number,
-        },
-        theme: { color: "#57b957" },
-        modal: { ondismiss: () => setLoading(false) },
-      };
+      /* 🔐 Create secure CCAvenue form */
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action =
+        "https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction";
 
-      new window.Razorpay(options).open();
-    } catch {
-      toast.error("Something went wrong");
+      const encInput = document.createElement("input");
+      encInput.type = "hidden";
+      encInput.name = "encRequest";
+      encInput.value = res.data.encRequest;
+
+      const accessInput = document.createElement("input");
+      accessInput.type = "hidden";
+      accessInput.name = "access_code";
+      accessInput.value = res.data.accessCode;
+
+      form.appendChild(encInput);
+      form.appendChild(accessInput);
+
+      document.body.appendChild(form);
+      form.submit();
+    } catch (err) {
+      console.error(err);
+      toast.error("Payment initiation failed");
       setLoading(false);
     }
   };
@@ -182,23 +164,26 @@ const Checkout = () => {
 
       <div className="min-h-screen pt-28 pb-12 px-3 sm:px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-
           {/* LEFT */}
           <div className="lg:col-span-2 space-y-6">
-
             {profile && (
-              <div className="bg-white rounded-xl shadow p-4 sm:p-5 border border-[#57b957]">
-                <h2 className="font-semibold mb-2">Customer Details</h2>
-                <p className="break-words text-sm sm:text-base">
-                  {profile.name} | {profile.email} | {profile.number}
+              <div className="bg-white rounded-xl shadow p-4 border border-[#57b957]">
+                <h2 className="font-semibold mb-2">
+                  Customer Details
+                </h2>
+                <p className="text-sm">
+                  {profile.name} | {profile.email} |{" "}
+                  {profile.number}
                 </p>
               </div>
             )}
 
             {/* ADDRESS */}
-            <div className="bg-white rounded-xl shadow p-4 sm:p-5 border border-[#57b957]">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-semibold text-lg">Delivery Address</h2>
+            <div className="bg-white rounded-xl shadow p-4 border border-[#57b957]">
+              <div className="flex justify-between mb-4">
+                <h2 className="font-semibold text-lg">
+                  Delivery Address
+                </h2>
                 <button
                   onClick={() => {
                     setShowNewAddress(true);
@@ -223,7 +208,9 @@ const Checkout = () => {
                   >
                     <input
                       type="radio"
-                      checked={selectedAddress?._id === a._id}
+                      checked={
+                        selectedAddress?._id === a._id
+                      }
                       readOnly
                       className="mt-1"
                     />
@@ -232,7 +219,8 @@ const Checkout = () => {
                         {a.street}, {a.city}
                       </p>
                       <p className="text-gray-600">
-                        {a.district}, {a.state} - {a.pincode}
+                        {a.district}, {a.state} –{" "}
+                        {a.pincode}
                       </p>
                     </div>
                     <FaEdit
@@ -246,12 +234,13 @@ const Checkout = () => {
                 ))}
               </div>
 
-              {/* ADD / EDIT FORM */}
               {(showNewAddress || editingAddressId) && (
-                <div className="mt-6 bg-gray-50 border rounded-xl p-4 sm:p-5">
+                <div className="mt-6 bg-gray-50 border rounded-xl p-4">
                   <div className="flex justify-between mb-4">
                     <h3 className="font-semibold">
-                      {showNewAddress ? "Add New Address" : "Edit Address"}
+                      {showNewAddress
+                        ? "Add New Address"
+                        : "Edit Address"}
                     </h3>
                     <button
                       onClick={() => {
@@ -263,104 +252,34 @@ const Checkout = () => {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      placeholder="Street"
-                      value={(showNewAddress ? newAddress : editAddressForm).street}
-                      onChange={(e) =>
-                        showNewAddress
-                          ? setNewAddress({ ...newAddress, street: e.target.value })
-                          : setEditAddressForm({ ...editAddressForm, street: e.target.value })
-                      }
-                      className="border rounded-lg px-3 py-2"
-                    />
-                    <input
-                      placeholder="Landmark"
-                      value={(showNewAddress ? newAddress : editAddressForm).landmark}
-                      onChange={(e) =>
-                        showNewAddress
-                          ? setNewAddress({ ...newAddress, landmark: e.target.value })
-                          : setEditAddressForm({ ...editAddressForm, landmark: e.target.value })
-                      }
-                      className="border rounded-lg px-3 py-2"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                    <input
-                      placeholder="City"
-                      value={(showNewAddress ? newAddress : editAddressForm).city}
-                      onChange={(e) =>
-                        showNewAddress
-                          ? setNewAddress({ ...newAddress, city: e.target.value })
-                          : setEditAddressForm({ ...editAddressForm, city: e.target.value })
-                      }
-                      className="border rounded-lg px-3 py-2"
-                    />
-                    <input
-                      placeholder="Pincode"
-                      value={(showNewAddress ? newAddress : editAddressForm).pincode}
-                      onChange={(e) =>
-                        showNewAddress
-                          ? setNewAddress({ ...newAddress, pincode: e.target.value })
-                          : setEditAddressForm({ ...editAddressForm, pincode: e.target.value })
-                      }
-                      className="border rounded-lg px-3 py-2"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                    <select
-                      value={(showNewAddress ? newAddress : editAddressForm).state}
-                      onChange={(e) =>
-                        showNewAddress
-                          ? setNewAddress({ ...newAddress, state: e.target.value, district: "" })
-                          : setEditAddressForm({
-                              ...editAddressForm,
-                              state: e.target.value,
-                              district: "",
-                            })
-                      }
-                      className="border rounded-lg px-3 py-2"
-                    >
-                      <option value="">Select State</option>
-                      {Object.keys(indiaStates).map((state) => (
-                        <option key={state} value={state}>
-                          {state}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={(showNewAddress ? newAddress : editAddressForm).district}
-                      disabled={
-                        !(showNewAddress ? newAddress.state : editAddressForm.state)
-                      }
-                      onChange={(e) =>
-                        showNewAddress
-                          ? setNewAddress({ ...newAddress, district: e.target.value })
-                          : setEditAddressForm({
-                              ...editAddressForm,
-                              district: e.target.value,
-                            })
-                      }
-                      className="border rounded-lg px-3 py-2"
-                    >
-                      <option value="">Select District</option>
-                      {(showNewAddress ? newAddress.state : editAddressForm.state) &&
-                        indiaStates[
-                          showNewAddress ? newAddress.state : editAddressForm.state
-                        ]?.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                  <input
+                    placeholder="Street"
+                    value={
+                      showNewAddress
+                        ? newAddress.street
+                        : editAddressForm.street
+                    }
+                    onChange={(e) =>
+                      showNewAddress
+                        ? setNewAddress({
+                            ...newAddress,
+                            street: e.target.value,
+                          })
+                        : setEditAddressForm({
+                            ...editAddressForm,
+                            street: e.target.value,
+                          })
+                    }
+                    className="border rounded-lg px-3 py-2 w-full mb-3"
+                  />
 
                   <button
-                    onClick={showNewAddress ? saveNewAddress : updateAddress}
-                    className="mt-4 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
+                    onClick={
+                      showNewAddress
+                        ? saveNewAddress
+                        : updateAddress
+                    }
+                    className="mt-2 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
                   >
                     Save Address
                   </button>
@@ -370,28 +289,40 @@ const Checkout = () => {
           </div>
 
           {/* RIGHT */}
-          <div className="bg-white rounded-xl shadow p-4 sm:p-5 border border-[#57b957] h-fit">
-            <h2 className="font-semibold mb-4">Order Summary</h2>
+          <div className="bg-white rounded-xl shadow p-4 border border-[#57b957] h-fit">
+            <h2 className="font-semibold mb-4">
+              Order Summary
+            </h2>
 
             {cartItems.map((item) => (
-              <div key={item.product._id} className="flex justify-between text-sm mb-1">
+              <div
+                key={item.product._id}
+                className="flex justify-between text-sm mb-1"
+              >
                 <span>
                   {item.product.name} × {item.quantity}
                 </span>
                 <span>
-                  ₹{(item.product.offerPrice ?? item.product.price) * item.quantity}
+                  ₹
+                  {(item.product.offerPrice ??
+                    item.product.price) *
+                    item.quantity}
                 </span>
               </div>
             ))}
 
             <div className="border-t mt-4 pt-4 flex justify-between font-semibold">
               <span>Total</span>
-              <span className="text-[#57b957]">₹{total}</span>
+              <span className="text-[#57b957]">
+                ₹{total}
+              </span>
             </div>
 
             <div className="flex justify-between text-sm text-gray-600 mt-3">
               <span>Estimated delivery</span>
-              <span className="font-medium">{estimatedDeliveryDate}</span>
+              <span className="font-medium">
+                {estimatedDeliveryDate}
+              </span>
             </div>
 
             <button
@@ -399,7 +330,9 @@ const Checkout = () => {
               disabled={loading}
               className="mt-5 w-full py-3 rounded-lg font-semibold text-white bg-[#57b957]"
             >
-              {loading ? "Processing..." : "Pay & Place Order"}
+              {loading
+                ? "Redirecting to payment..."
+                : "Pay & Place Order"}
             </button>
           </div>
         </div>
