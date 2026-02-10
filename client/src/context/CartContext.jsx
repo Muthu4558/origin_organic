@@ -97,7 +97,7 @@ export const CartProvider = ({ children }) => {
 
       if (!res.ok) throw new Error();
 
-      toast.success("Item removed");
+      // toast.success("Item removed");
       fetchCart();
     } catch {
       toast.error("Failed to remove item");

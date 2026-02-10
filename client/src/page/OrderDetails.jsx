@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -8,9 +8,11 @@ import { FaBoxOpen, FaTruck, FaCheckCircle } from "react-icons/fa";
 import { MdArrowRightAlt, MdDashboard, MdRateReview } from "react-icons/md";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import Sidebar from "../components/Sidebar";
 
 const OrderDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [order, setOrder] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -92,6 +94,20 @@ const OrderDetails = () => {
     { key: "delivered", title: "Order Delivered", icon: <FaCheckCircle /> },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`,
+        {},
+        { withCredentials: true }
+      );
+      navigate("/login");
+    }
+    catch (err) {
+      console.error("Logout failed:", err);
+    }
+  }
+
   const deliveryDateToShow =
     order.expectedDeliveryDate || order.estimatedDeliveryDate;
 
@@ -99,13 +115,13 @@ const OrderDetails = () => {
     <>
       {!isAdmin && <Navbar />}
 
-      <div className="min-h-screen px-4 sm:px-6 pt-28 pb-12">
+      <div className="min-h-screen px-4 sm:px-72 pt-28 pb-12">
+        {isAdmin && <Sidebar activePage="orders" handleLogout={handleLogout} />}
         {/* ADMIN HEADER */}
         {isAdmin && (
           <div className="max-w-5xl mx-auto mb-6">
             <div className="text-3xl font-bold flex items-center gap-3 mb-4 text-gray-800">
-              <MdDashboard className="text-[#57b957]" />
-              Admin <span className="text-[#57b957]">Dashboard</span>
+              Order <span className="text-[#57b957]">Tracking</span>
             </div>
 
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
@@ -118,7 +134,7 @@ const OrderDetails = () => {
               </Link>
               <MdArrowRightAlt />
               <span className="text-sm font-semibold text-[#57b957]">
-                Order Details
+                Order Tracking
               </span>
             </div>
           </div>
@@ -126,9 +142,10 @@ const OrderDetails = () => {
 
         {/* CONTENT */}
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-10 text-gray-800 text-center">
-            Order <span className="text-[#57b957]">Tracking</span>
-          </h1>
+          {!isAdmin && (
+            <h1 className="text-3xl sm:text-4xl font-bold mb-10 text-gray-800 text-center">
+              Order <span className="text-[#57b957]">Tracking</span>
+            </h1>)}
 
           <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-green-200 relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-72 h-72 bg-gradient-to-r from-[#57b957]/30 to-[#57b957]/10 rounded-full blur-3xl" />
@@ -148,18 +165,16 @@ const OrderDetails = () => {
                       className="flex gap-6 sm:gap-8 relative"
                     >
                       <div
-                        className={`z-10 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full text-white text-xl sm:text-2xl shadow-md ${
-                          active ? "bg-[#57b957]" : "bg-gray-300"
-                        }`}
+                        className={`z-10 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full text-white text-xl sm:text-2xl shadow-md ${active ? "bg-[#57b957]" : "bg-gray-300"
+                          }`}
                       >
                         {step.icon}
                       </div>
 
                       <div className="flex-1">
                         <p
-                          className={`font-semibold text-lg sm:text-xl mb-1 ${
-                            active ? "text-[#57b957]" : "text-gray-500"
-                          }`}
+                          className={`font-semibold text-lg sm:text-xl mb-1 ${active ? "text-[#57b957]" : "text-gray-500"
+                            }`}
                         >
                           {step.title}
                         </p>

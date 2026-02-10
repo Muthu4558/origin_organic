@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import { MdDashboard, MdArrowRightAlt } from "react-icons/md";
+import Sidebar from "../components/Sidebar";
+import { MdArrowRightAlt } from "react-icons/md";
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activePage, setActivePage] = useState("orders");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,9 +24,22 @@ const AdminOrders = () => {
                 setLoading(false);
             }
         };
-
         fetchAllOrders();
     }, []);
+
+    const handleLogout = async () => {
+        try {
+            await axios.post(
+                `${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`,
+                {},
+                { withCredentials: true }
+            );
+            navigate("/login");
+        }
+        catch (err) {
+            console.error("Logout failed:", err);
+        }
+    };
 
     const getCurrentStatus = (order) => {
         if (order.currentStatus) return order.currentStatus;
@@ -39,49 +54,47 @@ const AdminOrders = () => {
         DELIVERED: "bg-green-100 text-green-700",
     };
 
+    const fallbackImage = "https://via.placeholder.com/150?text=No+Image";
+
     return (
-        <div className="min-h-screen mt-15 pb-12 px-3 sm:px-4">
-            {/* HEADER */}
-            <div className="max-w-7xl mx-auto text-2xl sm:text-4xl font-bold flex items-center gap-3 mb-4">
-                <MdDashboard />
-                Admin <span className="text-[#57b957]">Dashboard</span>
-            </div>
+        <div className="flex min-h-screen bg-gray-100">
+            {/* Sidebar */}
+            <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout}/>
 
-            {/* BREADCRUMB */}
-            <div className="max-w-7xl mx-auto mb-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
-
-                    <Link
-                        to="/admin"
-                        className="text-sm font-medium text-gray-600 hover:text-[#57b957] transition"
-                    >
-                        Home
-                    </Link>
-
-                    <MdArrowRightAlt className="text-gray-400 text-lg" />
-
-                    <Link
-                        to="/admin/orders"
-                        className="text-sm font-semibold text-[#57b957]"
-                    >
-                        Orders
-                    </Link>
+            {/* Main content */}
+            <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8">
+                {/* HEADER */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        Customer <span className="text-[#57b957]">Orders</span>
+                    </h1>
                 </div>
-            </div>
 
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6">
-                    Customer Orders
-                </h1>
-
-                {loading && (
-                    <p className="text-center text-gray-500">Loading orders...</p>
-                )}
-                {!loading && orders.length === 0 && (
-                    <p className="text-center text-gray-500">No orders found.</p>
-                )}
+                {/* BREADCRUMB */}
+                <div className="mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
+                        <Link
+                            to="/admin"
+                            className="text-sm font-medium text-gray-600 hover:text-[#57b957] transition"
+                        >
+                            Home
+                        </Link>
+                        <MdArrowRightAlt className="text-gray-400 text-lg" />
+                        <Link
+                            to="/admin/orders"
+                            className="text-sm font-semibold text-[#57b957]"
+                        >
+                            Orders
+                        </Link>
+                    </div>
+                </div>
 
                 <div className="space-y-6 sm:space-y-8">
+                    {loading && <p className="text-center text-gray-500">Loading orders...</p>}
+                    {!loading && orders.length === 0 && (
+                        <p className="text-center text-gray-500">No orders found.</p>
+                    )}
+
                     {orders.map((order) => {
                         const currentStatus = getCurrentStatus(order);
                         const address = order.address || {};
@@ -108,64 +121,65 @@ const AdminOrders = () => {
                                             Customer Details
                                         </h3>
                                         <p className="text-sm text-gray-700 break-words">
-                                            <strong>Name:</strong> {order.user?.name}
+                                            <strong>Name:</strong> {order.user?.name ?? "-"}
                                         </p>
                                         <p className="text-sm text-gray-700 break-words">
-                                            <strong>Email:</strong> {order.user?.email}
+                                            <strong>Email:</strong> {order.user?.email ?? "-"}
                                         </p>
                                         <p className="text-sm text-gray-700">
-                                            <strong>Phone:</strong> {order.user?.number}
+                                            <strong>Phone:</strong> {order.user?.number ?? "-"}
                                         </p>
                                         <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                             Ordered on:{" "}
-                                            {new Date(order.createdAt).toLocaleDateString("en-GB")}
+                                            {order.createdAt
+                                                ? new Date(order.createdAt).toLocaleDateString("en-GB")
+                                                : "-"}
                                         </p>
                                     </div>
 
                                     {/* ADDRESS */}
                                     <div className="mb-4 bg-gray-50 p-3 rounded-lg border text-sm">
                                         <h4 className="font-semibold mb-1">Delivery Address</h4>
-                                        <p className="text-gray-700 break-words">
-                                            {address.street}, {address.area}
-                                        </p>
-                                        <p className="text-gray-700 break-words">
-                                            {address.city}, {address.district}
-                                        </p>
-                                        <p className="text-gray-700">
-                                            {address.state} - {address.pincode}
-                                        </p>
+                                        <p className="text-gray-700 break-words">{address.street ?? "-"}, {address.area ?? "-"}</p>
+                                        <p className="text-gray-700 break-words">{address.city ?? "-"}, {address.district ?? "-"}</p>
+                                        <p className="text-gray-700">{address.state ?? "-"} - {address.pincode ?? "-"}</p>
                                         {address.landmark && (
-                                            <p className="text-gray-500">
-                                                Landmark: {address.landmark}
-                                            </p>
+                                            <p className="text-gray-500">Landmark: {address.landmark}</p>
                                         )}
                                     </div>
 
                                     {/* ITEMS */}
                                     <div className="divide-y">
-                                        {order.items.map((item, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="flex items-start sm:items-center gap-3 sm:gap-4 py-3"
-                                            >
-                                                <img
-                                                    src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${item.product.image}`}
-                                                    alt={item.product.name}
-                                                    className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded border"
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-sm sm:text-base">
-                                                        {item.product.name}
-                                                    </p>
-                                                    <p className="text-xs sm:text-sm text-gray-500">
-                                                        Qty: {item.quantity}
+                                        {order.items.map((item, idx) => {
+                                            const product = item.product || {};
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 py-3"
+                                                >
+                                                    <img
+                                                        src={
+                                                            product.image
+                                                                ? `${import.meta.env.VITE_APP_BASE_URL}/uploads/${product.image}`
+                                                                : fallbackImage
+                                                        }
+                                                        alt={product.name ?? "No Name"}
+                                                        className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded border flex-shrink-0"
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-medium text-sm sm:text-base truncate">
+                                                            {product.name ?? "Deleted Product"}
+                                                        </p>
+                                                        <p className="text-xs sm:text-sm text-gray-500">
+                                                            Qty: {item.quantity ?? 0}
+                                                        </p>
+                                                    </div>
+                                                    <p className="font-semibold text-sm sm:text-base flex-shrink-0">
+                                                        ₹{(item.price ?? 0) * (item.quantity ?? 0)}
                                                     </p>
                                                 </div>
-                                                <p className="font-semibold text-sm sm:text-base">
-                                                    ₹{item.price * item.quantity}
-                                                </p>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
 
                                     {/* FOOTER */}
@@ -179,7 +193,7 @@ const AdminOrders = () => {
                                             </span>
                                         </p>
                                         <p className="font-semibold text-[#57b957] text-sm sm:text-base">
-                                            Total: ₹{order.totalAmount}
+                                            Total: ₹{order.totalAmount ?? 0}
                                         </p>
                                     </div>
                                 </div>
@@ -187,7 +201,7 @@ const AdminOrders = () => {
                         );
                     })}
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

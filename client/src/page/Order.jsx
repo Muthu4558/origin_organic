@@ -106,23 +106,27 @@ const Order = () => {
 
                                         {/* Items */}
                                         <div className="divide-y">
-                                            {order.items.map((item, index) => (
-                                                <div key={index} className="flex items-center gap-4 p-6 hover:bg-gray-50 transition">
-                                                    <img
-                                                        src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${item.product.image}`}
-                                                        alt={item.product.name}
-                                                        className="w-20 h-20 object-cover rounded-xl border"
-                                                    />
-                                                    <div className="flex-1">
-                                                        <p className="font-semibold text-gray-800">{item.product.name}</p>
-                                                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                                                        <p className="text-sm text-gray-500">Price: ₹{item.price}</p>
+                                            {order.items.map((item, index) => {
+                                                const product = item.product;
+                                                if (!product) return null; // skip if product is null
+
+                                                return (
+                                                    <div key={index} className="flex items-center gap-4 p-6 hover:bg-gray-50 transition">
+                                                        <img
+                                                            src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${product.image || "default.png"}`}
+                                                            alt={product.name || "Product"}
+                                                            className="w-20 h-20 object-cover rounded-xl border"
+                                                        />
+                                                        <div className="flex-1">
+                                                            <p className="font-semibold text-gray-800">{product.name || "Deleted Product"}</p>
+                                                            <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                                            <p className="text-sm text-gray-500">Price: ₹{item.price}</p>
+                                                        </div>
+                                                        <p className="font-semibold text-gray-800">₹{item.price * item.quantity}</p>
                                                     </div>
-                                                    <p className="font-semibold text-gray-800">
-                                                        ₹{item.price * item.quantity}
-                                                    </p>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
+
                                         </div>
 
                                         {/* Footer */}

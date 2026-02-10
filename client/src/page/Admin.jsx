@@ -1,35 +1,31 @@
-// src/pages/Admin.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+
+import Sidebar from "../components/Sidebar";
+import { useLoading } from "../context/LoadingContext";
+
 import {
   MdAddPhotoAlternate,
   MdDelete,
   MdEdit,
   MdSearch,
   MdFilterList,
-  MdDashboard,
 } from "react-icons/md";
 import {
   FaPlus,
-  FaSignOutAlt,
   FaCloudUploadAlt,
-  //   FaCloudUpload,
   FaCloud,
-  FaFirstOrder,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { motion } from "framer-motion";
-import Navbar from "../components/Navbar";
-import { useLoading } from "../context/LoadingContext";
-import { Link } from "react-router-dom";
 
 const BRAND = "#57b957";
 
 const Admin = () => {
-  const navigate = useNavigate();
+  const { loading, startLoading, stopLoading } = useLoading();
+  const [activePage, setActivePage] = useState("home");
 
+  // Product state
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -41,19 +37,19 @@ const Admin = () => {
     image: null,
     featured: false,
   });
-
   const [preview, setPreview] = useState(null);
   const [products, setProducts] = useState([]);
   const [editingProductId, setEditingProductId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
-  const { loading, startLoading, stopLoading } = useLoading();
-  const isKgCategory = ['Masala Items', 'Nuts', 'Diabetics Mix'].includes(formData.category);
 
-  // toolbar state
+  // Toolbar state
   const [q, setQ] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+
+  const categories = ["All", "Masala Items", "Milk Products", "Nuts", "Oils", "Diabetics Mix"];
+  const isKgCategory = ["Masala Items", "Nuts", "Diabetics Mix"].includes(formData.category);
 
   useEffect(() => {
     startLoading();
@@ -73,9 +69,8 @@ const Admin = () => {
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
     if (name === "image" && files && files[0]) {
-      const file = files[0];
-      setFormData((prev) => ({ ...prev, image: file }));
-      setPreview(URL.createObjectURL(file));
+      setFormData((prev) => ({ ...prev, image: files[0] }));
+      setPreview(URL.createObjectURL(files[0]));
     } else if (type === "checkbox") {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
@@ -85,7 +80,6 @@ const Admin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.name || !formData.price) {
       toast.error("Please provide name and price");
       return;
@@ -106,15 +100,16 @@ const Admin = () => {
         );
         toast.success("✅ Product updated successfully");
       } else {
-        await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/products/add`, data, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await axios.post(
+          `${import.meta.env.VITE_APP_BASE_URL}/api/products/add`,
+          data,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
         toast.success("🎉 Product added successfully");
       }
       resetForm();
       fetchProducts();
     } catch (err) {
-      console.error(err);
       toast.error("❌ Failed to submit");
     }
   };
@@ -151,14 +146,10 @@ const Admin = () => {
     setEditingProductId(product._id);
     setPreview(`${import.meta.env.VITE_APP_BASE_URL}/uploads/${product.image}`);
     setShowModal(true);
-    // keep page stable on open
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 80);
   };
 
-  const handleDelete = (id) => {
-    setProductToDelete(id);
-  };
-
+  const handleDelete = (id) => setProductToDelete(id);
   const confirmDelete = async () => {
     try {
       await axios.delete(`${import.meta.env.VITE_APP_BASE_URL}/api/products/delete/${productToDelete}`);
@@ -176,15 +167,13 @@ const Admin = () => {
       await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
       localStorage.removeItem("token");
       toast.success("Logged out");
-      setTimeout(() => {
-        navigate("/login");
-      }, 800);
+      window.location.href = "/login";
     } catch (err) {
       toast.error("Logout failed");
     }
   };
 
-  // derived filtered list
+  // Filtered products
   const filtered = products
     .filter((p) => (filterCategory === "All" ? true : p.category === filterCategory))
     .filter((p) => (showFeaturedOnly ? p.featured : true))
@@ -198,65 +187,28 @@ const Admin = () => {
       );
     });
 
-  const categories = ["All", "Masala Items", "Milk Products", "Nuts", 'Oils', 'Diabetics Mix'];
-
   return (
-    <>
-      {/* <Navbar /> */}
-      <div className="min-h-screen py-10 px-4">
-        <div className="max-w-7xl mx-auto text-4xl font-bold flex items-center gap-3 mb-4">
-          <MdDashboard /> Admin <span className="text-[#57b957]">Dashboard</span>
-        </div>
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout} />
 
-        {/* Navigation */}
-        <div className="max-w-7xl mx-auto mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
-
-            <Link
-              to="/admin"
-              className="text-sm font-medium text-[#57b957]"
+      {/* Main content */}
+      <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h1 className="text-3xl font-bold text-gray-900">Home</h1>
+          {activePage === "home" && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 bg-[#57b957] text-white px-4 py-2 rounded-lg hover:scale-[1.02] transition cursor-pointer"
             >
-              Home
-            </Link>
-          </div>
+              <FaPlus /> Add Product
+            </button>
+          )}
         </div>
 
-        <div className="max-w-7xl mx-auto">
-
-          {/* Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-extrabold text-gray-900">
-                Product <span className="text-[#57b957]">Inventory</span>
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">Manage products — add, edit or remove items quickly.</p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-              <button
-                onClick={() => navigate("/admin/orders")}
-                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto cursor-pointer"
-              >
-                <FaFirstOrder /> Customer Orders
-              </button>
-
-              <button
-                onClick={() => setShowModal(true)}
-                className="inline-flex items-center gap-2 justify-center bg-[#57b957] text-white px-4 py-2 rounded-lg shadow hover:scale-[1.02] transition w-full sm:w-auto cursor-pointer"
-              >
-                <FaPlus /> Add Product
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center gap-2 justify-center border border-red-600 text-red-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition w-full sm:w-auto cursor-pointer"
-              >
-                <FaSignOutAlt /> Logout
-              </button>
-            </div>
-          </div>
-
-          {/* Toolbar */}
+        {/* Toolbar & Filters */}
+        {activePage === "home" && (
           <div className="bg-white rounded-xl p-4 shadow-sm mb-6 flex flex-col md:flex-row md:items-center gap-3 justify-between">
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 flex-1">
               <div className="relative flex items-center w-full md:w-auto">
@@ -268,7 +220,6 @@ const Admin = () => {
                   className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 w-full md:w-[320px] focus:outline-none focus:ring-2 focus:ring-[#e6f2e6]"
                 />
               </div>
-
               <div className="flex items-center gap-2">
                 <MdFilterList className="text-gray-500" />
                 <select
@@ -282,7 +233,6 @@ const Admin = () => {
                 </select>
               </div>
             </div>
-
             <div className="flex items-center gap-3 justify-between md:justify-end w-full md:w-auto">
               <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -293,12 +243,13 @@ const Admin = () => {
                 />
                 <span className="text-sm text-gray-700">Show featured</span>
               </label>
-
               <div className="text-sm text-gray-500">{filtered.length} items</div>
             </div>
           </div>
+        )}
 
-          {/* Product grid */}
+        {/* Product Grid */}
+        {activePage === "home" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((product) => (
               <motion.div
@@ -313,13 +264,10 @@ const Admin = () => {
                     alt={product.name}
                     className="w-full h-48 object-cover"
                   />
-                  <div className="absolute top-3 right-3 flex items-center gap-2">
-                    {product.featured ? (
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">Featured</span>
-                    ) : null}
-                  </div>
+                  {product.featured && (
+                    <span className="absolute top-3 right-3 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">Featured</span>
+                  )}
                 </div>
-
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -331,137 +279,54 @@ const Admin = () => {
                       <div className="text-lg font-bold text-[#57b957]">{product.offerPrice ? `₹${product.offerPrice}` : product.price ? `₹${product.price}` : "-"}</div>
                     </div>
                   </div>
-
                   <div className="mt-2 text-sm">
                     {product.stock > 0 ? (
-                      <span className="text-green-600 font-medium">
-                        Stock: {product.stock}
-                      </span>
+                      <span className="text-green-600 font-medium">Stock: {product.stock}</span>
                     ) : (
-                      <span className="text-red-600 font-semibold">
-                        Out of Stock
-                      </span>
+                      <span className="text-red-600 font-semibold">Out of Stock</span>
                     )}
                   </div>
-
-
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="text-sm text-gray-500">{product.brand || "-"}</div>
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(product)}
-                        title="Edit"
-                        className="p-2 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-600 transition cursor-pointer"
-                      >
-                        <MdEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product._id)}
-                        title="Delete"
-                        className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer"
-                      >
-                        <MdDelete />
-                      </button>
+                      <button onClick={() => handleEdit(product)} className="p-2 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-600 transition cursor-pointer"><MdEdit /></button>
+                      <button onClick={() => handleDelete(product._id)} className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer"><MdDelete /></button>
                     </div>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
+        )}
 
-          {/* Empty state */}
-          {filtered.length === 0 && (
-            <div className="mt-8 bg-white rounded-xl p-8 shadow text-center">
-              <FaCloud className="mx-auto text-4xl text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800">No products found</h3>
-              <p className="text-sm text-gray-500 mt-2">Try changing filters or add a new product.</p>
-            </div>
-          )}
-        </div>
+        {/* Empty state */}
+        {activePage === "home" && filtered.length === 0 && (
+          <div className="mt-8 bg-white rounded-xl p-8 shadow text-center">
+            <FaCloud className="mx-auto text-4xl text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800">No products found</h3>
+            <p className="text-sm text-gray-500 mt-2">Try changing filters or add a new product.</p>
+          </div>
+        )}
 
-        {/* Modal Add / Edit */}
-        {showModal && (
+        {/* Add/Edit Modal */}
+        {showModal && activePage === "home" && (
           <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4">
-            <motion.div
-              initial={{ scale: 0.98, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl p-4 sm:p-8 relative"
-            >
-              {/* close */}
-              <button
-                onClick={resetForm}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-                aria-label="Close"
-              >
-                ×
-              </button>
-
-              <div className="mb-4 text-center">
-                <h2 className="text-2xl font-extrabold text-gray-900">
-                  {editingProductId ? "Update Product" : "Add New Product"}
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">Fill details below. Images supported (jpg, png).</p>
-              </div>
-
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl p-4 sm:p-8 relative">
+              <button onClick={resetForm} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">×</button>
+              <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-2">{editingProductId ? "Update Product" : "Add New Product"}</h2>
+              <p className="text-sm text-gray-500 text-center mb-4">Fill details below. Images supported (jpg, png).</p>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Product name"
-                    required
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
-                  />
-                  <input
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                    placeholder="Brand"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
-                  />
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border rounded-xl"
-                  >
+                  <input name="name" value={formData.name} onChange={handleChange} placeholder="Product name" required className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]" />
+                  <input name="brand" value={formData.brand} onChange={handleChange} placeholder="Brand" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]" />
+                  <select name="category" value={formData.category} onChange={handleChange} required className="w-full px-4 py-3 border rounded-xl">
                     <option value="">Select Category</option>
-                    <option>Masala Items</option>
-                    <option>Milk Products</option>
-                    <option>Nuts</option>
-                    <option>Oils</option>
-                    <option>Diabetics Mix</option>
+                    {categories.slice(1).map(c => <option key={c}>{c}</option>)}
                   </select>
-                  <input
-                    name="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={handleChange}
-                    placeholder={`Price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`}
-                    required
-                    className="w-full px-4 py-3 border rounded-xl"
-                  />
-
-                  <input
-                    name="offerPrice"
-                    type="number"
-                    value={formData.offerPrice}
-                    onChange={handleChange}
-                    placeholder={`Offer price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`}
-                    className="w-full px-4 py-3 border rounded-xl"
-                  />
+                  <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder={`Price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`} required className="w-full px-4 py-3 border rounded-xl" />
+                  <input name="offerPrice" type="number" value={formData.offerPrice} onChange={handleChange} placeholder={`Offer price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`} className="w-full px-4 py-3 border rounded-xl" />
                 </div>
-
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Short description"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea] min-h-[100px]"
-                />
-
+                <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Short description" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea] min-h-[100px]" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                   <div className="flex items-center gap-3">
                     <label className="flex items-center justify-center w-32 h-32 bg-gray-50 hover:bg-gray-100 text-gray-500 border border-dashed border-gray-200 rounded-2xl cursor-pointer">
@@ -471,60 +336,19 @@ const Admin = () => {
                         <input type="file" name="image" accept="image/*" onChange={handleChange} className="hidden" />
                       </div>
                     </label>
-
-                    {preview ? (
-                      <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded-2xl border" />
-                    ) : (
-                      editingProductId && formData.image && (
-                        <img
-                          src={`${import.meta.env.VITE_APP_BASE_URL}/uploads/${formData.image}`}
-                          alt="Existing"
-                          className="w-32 h-32 object-cover rounded-2xl border"
-                        />
-                      )
-                    )}
+                    {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded-2xl border" />}
                   </div>
-
                   <div className="flex flex-col gap-3">
-                    <input
-                      name="stock"
-                      type="number"
-                      min="0"
-                      value={formData.stock}
-                      onChange={handleChange}
-                      placeholder="Stock count"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]"
-                    />
-
+                    <input name="stock" type="number" min="0" value={formData.stock} onChange={handleChange} placeholder="Stock count" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea]" />
                     <label className="inline-flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        name="featured"
-                        checked={!!formData.featured}
-                        onChange={handleChange}
-                        className="h-4 w-4"
-                      />
+                      <input type="checkbox" name="featured" checked={!!formData.featured} onChange={handleChange} className="h-4 w-4" />
                       <span className="text-sm text-gray-700">Show on Home (Featured)</span>
                     </label>
                   </div>
                 </div>
-
-                {/* footer actions: sticky on larger screens, visible on mobile below form */}
-                <div className="mt-2">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
-                    <div className="text-sm text-gray-500">You can edit this later from the product list.</div>
-                    <div className="flex gap-3 w-full sm:w-auto">
-                      <button type="button" onClick={resetForm} className="px-4 py-2 rounded-lg border w-full sm:w-auto">
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="inline-flex items-center gap-2 bg-[#57b957] text-white px-4 py-2 rounded-lg w-full sm:w-auto justify-center cursor-pointer"
-                      >
-                        <FaCloudUploadAlt /> {editingProductId ? "Update Product" : "Add Product"}
-                      </button>
-                    </div>
-                  </div>
+                <div className="flex gap-3 mt-4 flex-col sm:flex-row">
+                  <button type="button" onClick={resetForm} className="px-4 py-2 rounded-lg border w-full sm:w-auto cursor-pointer">Cancel</button>
+                  <button type="submit" className="flex items-center justify-center gap-2 bg-[#57b957] text-white px-4 py-2 rounded-lg w-full sm:w-auto cursor-pointer"><FaCloudUploadAlt /> {editingProductId ? "Update Product" : "Add Product"}</button>
                 </div>
               </form>
             </motion.div>
@@ -537,19 +361,15 @@ const Admin = () => {
             <div className="bg-white rounded-2xl p-6 max-w-md w-full text-center shadow-lg">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Confirm delete</h3>
               <p className="text-sm text-gray-600 mb-6">This action cannot be undone. Are you sure?</p>
-              <div className="flex items-center justify-center gap-4">
-                <button onClick={() => setProductToDelete(null)} className="px-4 py-2 rounded-lg border">
-                  Cancel
-                </button>
-                <button onClick={confirmDelete} className="px-4 py-2 rounded-lg bg-red-500 text-white">
-                  Yes, delete
-                </button>
+              <div className="flex items-center justify-center gap-4 flex-col sm:flex-row">
+                <button onClick={() => setProductToDelete(null)} className="px-4 py-2 rounded-lg border w-full sm:w-auto cursor-pointer">Cancel</button>
+                <button onClick={confirmDelete} className="px-4 py-2 rounded-lg bg-red-500 text-white w-full sm:w-auto cursor-pointer">Yes, delete</button>
               </div>
             </div>
           </div>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

@@ -26,6 +26,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import Shipping from "./components/Shipping";
 import Terms from "./components/Terms";
 import VerifyEmail from "./page/VerifyEmail";
+import AdminShipping from "./page/AdminShipping";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -60,6 +61,7 @@ const AppContent = () => {
                 <Route path="/thankyou" element={<ThankYou />} />
                 {/* admin */}
                 <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />
+                <Route path="/admin/shipping" element={<PrivateRoute adminOnly={true}><AdminShipping /></PrivateRoute>} />
                 <Route path="/admin/orders" element={<PrivateRoute adminOnly={true}><AdminOrders /></PrivateRoute>} />
             </Routes>
         </>

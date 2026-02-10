@@ -7,7 +7,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaPlus } from "react-icons/fa";
-import { MdClose } from "react-icons/md";
 import indiaStates from "../data/indiaStates.json";
 
 const emptyAddress = {
@@ -33,9 +32,11 @@ const Checkout = () => {
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [editAddressForm, setEditAddressForm] = useState(emptyAddress);
 
+  const [shippingRules, setShippingRules] = useState([]);
+
   const [loading, setLoading] = useState(false);
 
-  /* ---------- INIT ---------- */
+  /* ---------------- INIT ---------------- */
   useEffect(() => {
     fetchCart();
 
@@ -46,23 +47,76 @@ const Checkout = () => {
       .then((res) => {
         setProfile(res.data);
         setAddresses(res.data.addresses || []);
+
+        if (res.data.addresses?.length) {
+          setSelectedAddress(res.data.addresses[0]);
+        }
       })
       .catch(() => navigate("/login"));
+
+    // 🔥 fetch shipping rules
+    axios
+      .get(`${import.meta.env.VITE_APP_BASE_URL}/api/shipping`)
+      .then((res) => setShippingRules(res.data))
+      .catch(() => toast.error("Shipping load failed"));
   }, []);
 
-  /* ---------- TOTAL ---------- */
-  const total = useMemo(
-    () =>
-      cartItems.reduce(
-        (sum, item) =>
-          sum +
-          (item.product.offerPrice ?? item.product.price) *
-            item.quantity,
-        0
-      ),
-    [cartItems]
-  );
+  /* ---------------- PRODUCT TOTAL ---------------- */
+  const productTotal = useMemo(() => {
+    return cartItems.reduce(
+      (sum, item) =>
+        sum +
+        (item.product.offerPrice ?? item.product.price) *
+        item.quantity,
+      0
+    );
+  }, [cartItems]);
 
+  /* ---------------- GET WEIGHT SAFELY ---------------- */
+  const getWeight = (product) => {
+    return product.weight || product.size || product.variant || "1kg";
+  };
+
+  /* ---------------- SHIPPING TOTAL (FROM DB) ---------------- */
+  const shippingTotal = useMemo(() => {
+    if (!selectedAddress || !shippingRules.length) return 0;
+
+    const state = selectedAddress.state?.trim();
+    const district = selectedAddress.district?.trim();
+
+    return cartItems.reduce((sum, item) => {
+      const weight = getWeight(item.product);
+      const qty = item.quantity;
+
+      // try district match
+      let rule = shippingRules.find(
+        (r) =>
+          r.state === state &&
+          r.district &&
+          r.district === district
+      );
+
+      // fallback to state
+      if (!rule) {
+        rule = shippingRules.find(
+          (r) => r.state === state && !r.district
+        );
+      }
+
+      if (!rule) return sum;
+
+      let charge = 0;
+
+      if (weight === "500g" || weight === "0.5kg") charge = rule.halfKg;
+      else charge = rule.oneKg;
+
+      return sum + charge * qty;
+    }, 0);
+  }, [cartItems, selectedAddress, shippingRules]);
+
+  const total = productTotal + shippingTotal;
+
+  /* ---------------- DELIVERY DATE ---------------- */
   const estimatedDeliveryDate = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -73,7 +127,7 @@ const Checkout = () => {
     });
   }, []);
 
-  /* ---------- ADDRESS APIs ---------- */
+  /* ---------------- ADD ADDRESS ---------------- */
   const saveNewAddress = async () => {
     try {
       const res = await axios.post(
@@ -81,6 +135,7 @@ const Checkout = () => {
         newAddress,
         { withCredentials: true }
       );
+
       setAddresses(res.data);
       setSelectedAddress(res.data.at(-1));
       setShowNewAddress(false);
@@ -91,6 +146,7 @@ const Checkout = () => {
     }
   };
 
+  /* ---------------- EDIT ADDRESS ---------------- */
   const updateAddress = async () => {
     try {
       const res = await axios.put(
@@ -98,16 +154,16 @@ const Checkout = () => {
         editAddressForm,
         { withCredentials: true }
       );
+
       setAddresses(res.data);
       setEditingAddressId(null);
-      setEditAddressForm(emptyAddress);
       toast.success("Address updated");
     } catch {
       toast.error("Failed to update address");
     }
   };
 
-  /* ---------- CCAvenue PAYMENT ---------- */
+  /* ---------------- PAYMENT ---------------- */
   const placeOrder = async () => {
     if (!selectedAddress) return toast.error("Select address");
     if (!cartItems.length) return toast.error("Cart empty");
@@ -129,7 +185,6 @@ const Checkout = () => {
         { withCredentials: true }
       );
 
-      /* 🔐 Create secure CCAvenue form */
       const form = document.createElement("form");
       form.method = "POST";
       form.action =
@@ -147,15 +202,78 @@ const Checkout = () => {
 
       form.appendChild(encInput);
       form.appendChild(accessInput);
-
       document.body.appendChild(form);
       form.submit();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Payment initiation failed");
       setLoading(false);
     }
   };
+
+  /* ---------------- ADDRESS FORM ---------------- */
+  const renderAddressForm = (data, setData, onSave) => (
+    <div className="mt-4 bg-gray-50 border rounded-xl p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <input
+          placeholder="Street"
+          value={data.street}
+          onChange={(e) => setData({ ...data, street: e.target.value })}
+          className="border rounded-lg px-3 py-2"
+        />
+        <input
+          placeholder="Landmark"
+          value={data.landmark}
+          onChange={(e) => setData({ ...data, landmark: e.target.value })}
+          className="border rounded-lg px-3 py-2"
+        />
+        <input
+          placeholder="City"
+          value={data.city}
+          onChange={(e) => setData({ ...data, city: e.target.value })}
+          className="border rounded-lg px-3 py-2"
+        />
+        <input
+          placeholder="Pincode"
+          value={data.pincode}
+          onChange={(e) => setData({ ...data, pincode: e.target.value })}
+          className="border rounded-lg px-3 py-2"
+        />
+
+        <select
+          value={data.state}
+          onChange={(e) =>
+            setData({ ...data, state: e.target.value, district: "" })
+          }
+          className="border rounded-lg px-3 py-2"
+        >
+          <option value="">Select State</option>
+          {Object.keys(indiaStates).map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+
+        <select
+          value={data.district}
+          disabled={!data.state}
+          onChange={(e) => setData({ ...data, district: e.target.value })}
+          className="border rounded-lg px-3 py-2"
+        >
+          <option value="">Select District</option>
+          {data.state &&
+            indiaStates[data.state]?.map((d) => (
+              <option key={d}>{d}</option>
+            ))}
+        </select>
+      </div>
+
+      <button
+        onClick={onSave}
+        className="mt-4 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
+      >
+        Save Address
+      </button>
+    </div>
+  );
 
   return (
     <>
@@ -168,12 +286,9 @@ const Checkout = () => {
           <div className="lg:col-span-2 space-y-6">
             {profile && (
               <div className="bg-white rounded-xl shadow p-4 border border-[#57b957]">
-                <h2 className="font-semibold mb-2">
-                  Customer Details
-                </h2>
+                <h2 className="font-semibold mb-2">Customer Details</h2>
                 <p className="text-sm">
-                  {profile.name} | {profile.email} |{" "}
-                  {profile.number}
+                  {profile.name} | {profile.email} | {profile.number}
                 </p>
               </div>
             )}
@@ -181,12 +296,11 @@ const Checkout = () => {
             {/* ADDRESS */}
             <div className="bg-white rounded-xl shadow p-4 border border-[#57b957]">
               <div className="flex justify-between mb-4">
-                <h2 className="font-semibold text-lg">
-                  Delivery Address
-                </h2>
+                <h2 className="font-semibold">Delivery Address</h2>
+
                 <button
                   onClick={() => {
-                    setShowNewAddress(true);
+                    setShowNewAddress(!showNewAddress);
                     setEditingAddressId(null);
                   }}
                   className="flex items-center gap-2 text-[#57b957]"
@@ -195,104 +309,51 @@ const Checkout = () => {
                 </button>
               </div>
 
-              <div className="space-y-3">
-                {addresses.map((a) => (
-                  <label
-                    key={a._id}
-                    className={`flex gap-3 p-4 border rounded-lg cursor-pointer ${
-                      selectedAddress?._id === a._id
-                        ? "bg-green-50 border-[#57b957]"
-                        : "hover:border-[#57b957]"
+              {addresses.map((a) => (
+                <label
+                  key={a._id}
+                  onClick={() => setSelectedAddress(a)}
+                  className={`flex gap-3 p-4 border rounded-lg cursor-pointer mb-2 ${selectedAddress?._id === a._id
+                      ? "bg-green-50 border-[#57b957]"
+                      : ""
                     }`}
-                    onClick={() => setSelectedAddress(a)}
-                  >
-                    <input
-                      type="radio"
-                      checked={
-                        selectedAddress?._id === a._id
-                      }
-                      readOnly
-                      className="mt-1"
-                    />
-                    <div className="flex-1 text-sm">
-                      <p className="font-medium">
-                        {a.street}, {a.city}
-                      </p>
-                      <p className="text-gray-600">
-                        {a.district}, {a.state} –{" "}
-                        {a.pincode}
-                      </p>
-                    </div>
-                    <FaEdit
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingAddressId(a._id);
-                        setEditAddressForm(a);
-                      }}
-                    />
-                  </label>
-                ))}
-              </div>
-
-              {(showNewAddress || editingAddressId) && (
-                <div className="mt-6 bg-gray-50 border rounded-xl p-4">
-                  <div className="flex justify-between mb-4">
-                    <h3 className="font-semibold">
-                      {showNewAddress
-                        ? "Add New Address"
-                        : "Edit Address"}
-                    </h3>
-                    <button
-                      onClick={() => {
-                        setShowNewAddress(false);
-                        setEditingAddressId(null);
-                      }}
-                    >
-                      <MdClose size={22} />
-                    </button>
+                >
+                  <input
+                    type="radio"
+                    checked={selectedAddress?._id === a._id}
+                    readOnly
+                  />
+                  <div className="flex-1 text-sm">
+                    {a.street}, {a.city}, {a.district}, {a.state} –{" "}
+                    {a.pincode}
                   </div>
 
-                  <input
-                    placeholder="Street"
-                    value={
-                      showNewAddress
-                        ? newAddress.street
-                        : editAddressForm.street
-                    }
-                    onChange={(e) =>
-                      showNewAddress
-                        ? setNewAddress({
-                            ...newAddress,
-                            street: e.target.value,
-                          })
-                        : setEditAddressForm({
-                            ...editAddressForm,
-                            street: e.target.value,
-                          })
-                    }
-                    className="border rounded-lg px-3 py-2 w-full mb-3"
+                  <FaEdit
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingAddressId(a._id);
+                      setEditAddressForm(a);
+                      setShowNewAddress(false);
+                    }}
                   />
+                </label>
+              ))}
 
-                  <button
-                    onClick={
-                      showNewAddress
-                        ? saveNewAddress
-                        : updateAddress
-                    }
-                    className="mt-2 w-full bg-[#57b957] text-white py-2 rounded-lg font-semibold"
-                  >
-                    Save Address
-                  </button>
-                </div>
-              )}
+              {showNewAddress &&
+                renderAddressForm(newAddress, setNewAddress, saveNewAddress)}
+
+              {editingAddressId &&
+                renderAddressForm(
+                  editAddressForm,
+                  setEditAddressForm,
+                  updateAddress
+                )}
             </div>
           </div>
 
           {/* RIGHT */}
           <div className="bg-white rounded-xl shadow p-4 border border-[#57b957] h-fit">
-            <h2 className="font-semibold mb-4">
-              Order Summary
-            </h2>
+            <h2 className="font-semibold mb-4">Order Summary</h2>
 
             {cartItems.map((item) => (
               <div
@@ -304,25 +365,25 @@ const Checkout = () => {
                 </span>
                 <span>
                   ₹
-                  {(item.product.offerPrice ??
-                    item.product.price) *
+                  {(item.product.offerPrice ?? item.product.price) *
                     item.quantity}
                 </span>
               </div>
             ))}
 
+            <div className="flex justify-between text-sm mt-3">
+              <span>Shipping</span>
+              <span>₹{shippingTotal}</span>
+            </div>
+
             <div className="border-t mt-4 pt-4 flex justify-between font-semibold">
-              <span>Total</span>
-              <span className="text-[#57b957]">
-                ₹{total}
-              </span>
+              <span>Grand Total</span>
+              <span className="text-[#57b957]">₹{total}</span>
             </div>
 
             <div className="flex justify-between text-sm text-gray-600 mt-3">
               <span>Estimated delivery</span>
-              <span className="font-medium">
-                {estimatedDeliveryDate}
-              </span>
+              <span className="font-medium">{estimatedDeliveryDate}</span>
             </div>
 
             <button
@@ -330,9 +391,7 @@ const Checkout = () => {
               disabled={loading}
               className="mt-5 w-full py-3 rounded-lg font-semibold text-white bg-[#57b957]"
             >
-              {loading
-                ? "Redirecting to payment..."
-                : "Pay & Place Order"}
+              {loading ? "Redirecting..." : "Pay & Place Order"}
             </button>
           </div>
         </div>

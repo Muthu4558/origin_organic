@@ -26,6 +26,7 @@ import {
   FaBrain,
 } from "react-icons/fa";
 import { useLoading } from "../context/LoadingContext";
+import Hero from "../assets/about.jpg"
 
 export default function About() {
   const location = useLocation();
@@ -100,7 +101,7 @@ export default function About() {
               <div className="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl border border-[#57b957]">
                 <div className="rounded-xl overflow-hidden">
                   <img
-                    src="/assets/about-hero-collage.jpg"
+                    src={Hero}
                     alt="origin organic collage"
                     className="w-full h-44 sm:h-56 object-cover"
                     draggable={false}

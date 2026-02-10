@@ -73,12 +73,12 @@ const Footer = () => {
               </a>
             </p>
 
-            <p className="flex items-center gap-2 text-gray-400 text-sm mb-2">
+            {/* <p className="flex items-center gap-2 text-gray-400 text-sm mb-2">
               <FaGlobe className="text-[#57b957]" />
               <a href="https://www.originorganic.in" target="_blank" className="hover:text-[#57b957] transition">
                 originorganic.in
               </a>
-            </p>
+            </p> */}
 
             <p className="flex items-center gap-2 text-gray-400 text-sm mb-4">
               <FiMail className="text-[#57b957]" />
