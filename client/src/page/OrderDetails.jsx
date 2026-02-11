@@ -13,6 +13,7 @@ import Sidebar from "../components/Sidebar";
 const OrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [activePage, setActivePage] = useState("orders");
 
   const [order, setOrder] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -116,7 +117,7 @@ const OrderDetails = () => {
       {!isAdmin && <Navbar />}
 
       <div className="min-h-screen px-4 sm:px-72 pt-28 pb-12">
-        {isAdmin && <Sidebar activePage="orders" handleLogout={handleLogout} />}
+        {isAdmin && <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout} />}
         {/* ADMIN HEADER */}
         {isAdmin && (
           <div className="max-w-5xl mx-auto mb-6">
