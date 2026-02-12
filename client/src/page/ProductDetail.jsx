@@ -20,6 +20,23 @@ const resolveUnit = (product) => {
   return "litre";
 };
 
+const formatPackSize = (product) => {
+  const unit = resolveUnit(product);
+  const size = product?.packSize;
+
+  if (!size) return unit; // fallback for old data
+
+  if (unit === "kg") {
+    return size === "0.5" ? "500 g" : "1 kg";
+  }
+
+  if (unit === "litre") {
+    return size === "0.5" ? "500 ml" : "1 l";
+  }
+
+  return unit;
+};
+
 const Skeleton = () => (
   <div className="animate-pulse">
     <div className="h-72 bg-gray-200 rounded-lg" />
@@ -316,6 +333,7 @@ const ProductDetail = () => {
   const discountPercent = offerPrice ? Math.round(((price - offerPrice) / price) * 100) : 0;
   const rating = Math.max(0, Math.min(5, Number(product.rating ?? 4.3)));
   const unit = resolveUnit(product);
+  const displaySize = formatPackSize(product);
 
   return (
     <>
@@ -464,10 +482,10 @@ const ProductDetail = () => {
                         {offerPrice ? (
                           <>
                             <div className="text-sm text-gray-400 line-through">₹{price.toLocaleString()} </div>
-                            <div className="text-3xl font-extrabold text-[#57b957]">₹{offerPrice.toLocaleString()} <span className="text-sm text-gray-500">/ {unit}</span></div>
+                            <div className="text-3xl font-extrabold text-[#57b957]">₹{offerPrice.toLocaleString()} <span className="text-sm text-gray-500">/ {displaySize}</span></div>
                           </>
                         ) : (
-                          <div className="text-3xl font-extrabold text-[#57b957]">₹{price.toLocaleString()} <span>/ {unit}</span></div>
+                          <div className="text-3xl font-extrabold text-[#57b957]">₹{price.toLocaleString()} <span>/ {displaySize}</span></div>
                         )}
                       </div>
 

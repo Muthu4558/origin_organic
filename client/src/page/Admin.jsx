@@ -34,6 +34,8 @@ const Admin = () => {
     stock: "",
     brand: "",
     category: "",
+    unit: "",
+    packSize: "",
     image: null,
     featured: false,
   });
@@ -50,6 +52,21 @@ const Admin = () => {
 
   const categories = ["All", "Masala Items", "Milk Products", "Nuts", "Oils", "Diabetics Mix"];
   const isKgCategory = ["Masala Items", "Nuts", "Diabetics Mix"].includes(formData.category);
+
+  /* 🔥 dynamic size text */
+  const getDisplaySize = () => {
+    if (!formData.packSize) {
+      return isKgCategory ? "kg" : "litre";
+    }
+
+    if (isKgCategory) {
+      return formData.packSize === "0.5" ? "500 g" : "1 kg";
+    }
+
+    return formData.packSize === "0.5" ? "500 ml" : "1 l";
+  };
+
+  const displaySize = getDisplaySize();
 
   useEffect(() => {
     startLoading();
@@ -123,6 +140,8 @@ const Admin = () => {
       stock: "",
       brand: "",
       category: "",
+      unit: "",
+      packSize: "",
       image: null,
       featured: false,
     });
@@ -140,6 +159,8 @@ const Admin = () => {
       stock: product.stock ?? "",
       brand: product.brand || "",
       category: product.category || "",
+      unit: product.unit || "",
+      packSize: product.packSize || "",
       image: product.image || null,
       featured: !!product.featured,
     });
@@ -323,8 +344,37 @@ const Admin = () => {
                     <option value="">Select Category</option>
                     {categories.slice(1).map(c => <option key={c}>{c}</option>)}
                   </select>
-                  <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder={`Price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`} required className="w-full px-4 py-3 border rounded-xl" />
-                  <input name="offerPrice" type="number" value={formData.offerPrice} onChange={handleChange} placeholder={`Offer price per ${isKgCategory ? 'Kg' : 'Litre'} (₹)`} className="w-full px-4 py-3 border rounded-xl" />
+                  <select
+                    name="unit"
+                    value={formData.unit}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border rounded-xl"
+                  >
+                    <option value="">Select Unit</option>
+                    <option value="kg">Kg</option>
+                    <option value="litre">Litre</option>
+                  </select>
+
+                  <select
+                    name="packSize"
+                    value={formData.packSize}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border rounded-xl"
+                  >
+                    <option value="">Select Size</option>
+                    <option value="0.5">
+                      {isKgCategory ? "500 g" : "500 ml"}
+                    </option>
+                    <option value="1">
+                      {isKgCategory ? "1 kg" : "1 l"}
+                    </option>
+
+                  </select>
+
+                  <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder={`Price per ${displaySize} (₹)`} required className="w-full px-4 py-3 border rounded-xl" />
+                  <input name="offerPrice" type="number" value={formData.offerPrice} onChange={handleChange} placeholder={`Offer price per ${displaySize} (₹)`} className="w-full px-4 py-3 border rounded-xl" />
                 </div>
                 <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Short description" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea] min-h-[100px]" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">

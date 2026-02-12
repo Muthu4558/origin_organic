@@ -12,6 +12,25 @@ const resolveUnit = (product) => {
   return "litre";
 };
 
+/* ✅ NEW – pack size formatter */
+const formatPackSize = (product) => {
+  const unit = resolveUnit(product);
+  const size = product?.packSize;
+
+  // for old products where packSize not available
+  if (!size) return unit;
+
+  if (unit === "kg") {
+    return size === "0.5" ? "500 g" : "1 kg";
+  }
+
+  if (unit === "litre") {
+    return size === "0.5" ? "500 ml" : "1 l";
+  }
+
+  return unit;
+};
+
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -24,7 +43,9 @@ const ProductCard = ({ product }) => {
   const msrp = product?.price ?? 0;
   const price = product?.offerPrice ?? product?.price ?? 0;
   const rating = Math.max(0, Math.min(5, product?.rating ?? 4));
+
   const unit = resolveUnit(product);
+  const displaySize = formatPackSize(product); // ✅ use this
 
   const discount =
     msrp && msrp > price
@@ -43,7 +64,6 @@ const ProductCard = ({ product }) => {
 
   return (
     <motion.article
-      // whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
       className="w-full max-w-[340px] mx-auto"
     >
@@ -103,11 +123,6 @@ const ProductCard = ({ product }) => {
             ))}
           </div>
 
-          {/* DESCRIPTION */}
-          {/* <p className="mt-2 text-sm text-white/80 line-clamp-2">
-            {product?.description}
-          </p> */}
-
           {/* PRICE + CTA */}
           <div className="mt-4 flex items-center justify-between gap-3">
             <div>
@@ -119,7 +134,7 @@ const ProductCard = ({ product }) => {
               <div className="text-2xl font-extrabold">
                 ₹{price}
                 <span className="text-sm font-medium text-[#57b957]">
-                  {" "} / {unit}
+                  {" "} / {displaySize}
                 </span>
               </div>
             </div>

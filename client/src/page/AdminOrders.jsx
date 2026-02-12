@@ -59,7 +59,7 @@ const AdminOrders = () => {
     return (
         <div className="flex min-h-screen bg-gray-100">
             {/* Sidebar */}
-            <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout}/>
+            <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout} />
 
             {/* Main content */}
             <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8">
@@ -112,29 +112,35 @@ const AdminOrders = () => {
 
                                 {/* CARD */}
                                 <div
-                                    onClick={() => navigate(`/order/${order._id}`)}
-                                    className="bg-white rounded-xl shadow border border-[#57b957] p-4 sm:p-5 cursor-pointer hover:shadow-lg transition"
+                                    className="bg-white rounded-xl shadow border border-[#57b957] p-4 sm:p-5 hover:shadow-lg transition"
                                 >
                                     {/* CUSTOMER DETAILS */}
-                                    <div className="mb-4">
-                                        <h3 className="font-semibold text-gray-800 mb-1">
-                                            Customer Details
-                                        </h3>
-                                        <p className="text-sm text-gray-700 break-words">
-                                            <strong>Name:</strong> {order.user?.name ?? "-"}
-                                        </p>
-                                        <p className="text-sm text-gray-700 break-words">
-                                            <strong>Email:</strong> {order.user?.email ?? "-"}
-                                        </p>
-                                        <p className="text-sm text-gray-700">
-                                            <strong>Phone:</strong> {order.user?.number ?? "-"}
-                                        </p>
-                                        <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                                            Ordered on:{" "}
-                                            {order.createdAt
-                                                ? new Date(order.createdAt).toLocaleDateString("en-GB")
-                                                : "-"}
-                                        </p>
+                                    <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div>
+                                            <h3 className="font-semibold text-gray-800 mb-1">
+                                                Customer Details
+                                            </h3>
+                                            <p className="text-sm text-gray-700 break-words">
+                                                <strong>Name:</strong> {order.user?.name ?? "-"}
+                                            </p>
+                                            <p className="text-sm text-gray-700 break-words">
+                                                <strong>Email:</strong> {order.user?.email ?? "-"}
+                                            </p>
+                                            <p className="text-sm text-gray-700">
+                                                <strong>Phone:</strong> {order.user?.number ?? "-"}
+                                            </p>
+                                            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                                                Ordered on:{" "}
+                                                {order.createdAt
+                                                    ? new Date(order.createdAt).toLocaleDateString("en-GB")
+                                                    : "-"}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <a href="#"
+                                            onClick={() => navigate(`/order/${order._id}`)}
+                                            className="p-2 bg-[#57b957] text-white rounded-lg text-sm">Change Status</a>
+                                        </div>
                                     </div>
 
                                     {/* ADDRESS */}

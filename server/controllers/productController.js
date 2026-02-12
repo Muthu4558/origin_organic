@@ -1,6 +1,7 @@
-import Product from '../models/productModel.js';
-import Order from '../models/Order.js';
+import Product from "../models/productModel.js";
+import Order from "../models/Order.js";
 
+/* ================= CREATE PRODUCT ================= */
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -11,16 +12,12 @@ export const createProduct = async (req, res) => {
       stock,
       brand,
       category,
-      featured
+      featured,
+      unit,        // ✅ NEW
+      packSize,    // ✅ NEW
     } = req.body;
 
     const image = req.file?.filename;
-
-    // 🔹 Unit logic
-    const unit =
-      ['Masala Items', 'Nuts', 'Diabetics Mix'].includes(category)
-        ? 'kg'
-        : 'litre';
 
     const product = await Product.create({
       name,
@@ -31,16 +28,19 @@ export const createProduct = async (req, res) => {
       brand,
       category,
       unit,
+      packSize,
       image,
-      featured: featured === 'true'
+      featured: featured === "true",
     });
 
     res.status(201).json(product);
   } catch (error) {
+    console.error("CREATE PRODUCT ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
+/* ================= GET BY CATEGORY ================= */
 export const getProductsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
@@ -51,6 +51,7 @@ export const getProductsByCategory = async (req, res) => {
   }
 };
 
+/* ================= FEATURED ================= */
 export const getFeaturedProducts = async (req, res) => {
   try {
     const products = await Product.find({ featured: true });
@@ -60,6 +61,7 @@ export const getFeaturedProducts = async (req, res) => {
   }
 };
 
+/* ================= GET ALL ================= */
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -69,23 +71,33 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
+/* ================= UPDATE ================= */
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, offerPrice, category, featured, stock } = req.body;
-
-    const unit =
-      ['Masala Items', 'Nuts', 'Diabetics Mix'].includes(category)
-        ? 'kg'
-        : 'litre';
+    const {
+      name,
+      price,
+      offerPrice,
+      category,
+      featured,
+      stock,
+      unit,        // ✅ NEW
+      packSize,    // ✅ NEW
+      description,
+      brand,
+    } = req.body;
 
     const updateData = {
       name,
       price,
       offerPrice,
       category,
-      unit,
       stock,
-      featured: featured === 'true'
+      unit,
+      packSize,
+      description,
+      brand,
+      featured: featured === "true",
     };
 
     if (req.file) updateData.image = req.file.filename;
@@ -98,20 +110,22 @@ export const updateProduct = async (req, res) => {
 
     res.json(updatedProduct);
   } catch (err) {
+    console.error("UPDATE ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };
 
-
+/* ================= DELETE ================= */
 export const deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Product deleted' });
+    res.json({ message: "Product deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+/* ================= GET BY ID ================= */
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,36 +137,32 @@ export const getProductById = async (req, res) => {
   }
 };
 
+/* ================= ADD REVIEW ================= */
 export const addProductReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
 
     const product = await Product.findById(req.params.id);
-
-    if (!product) {
+    if (!product)
       return res.status(404).json({ message: "Product not found" });
-    }
 
-    if (!req.user) {
+    if (!req.user)
       return res.status(401).json({ message: "User not authenticated" });
-    }
 
     const deliveredOrder = await Order.findOne({
-  user: req.user._id,
-  "items.product": req.params.id,
-  currentStatus: "DELIVERED"
-});
+      user: req.user._id,
+      "items.product": req.params.id,
+      currentStatus: "DELIVERED",
+    });
 
-if (!deliveredOrder) {
-  return res.status(403).json({
-    message: "You can review this product only after delivery"
-  });
-}
+    if (!deliveredOrder) {
+      return res.status(403).json({
+        message: "You can review this product only after delivery",
+      });
+    }
 
-
-    // ❌ Prevent duplicate review
     const alreadyReviewed = product.reviews.find(
-      r => r.user.toString() === req.user._id.toString()
+      (r) => r.user.toString() === req.user._id.toString()
     );
 
     if (alreadyReviewed) {
@@ -163,7 +173,7 @@ if (!deliveredOrder) {
       user: req.user._id,
       author: req.user.name || req.user.email || "User",
       rating: Number(rating),
-      comment
+      comment,
     };
 
     product.reviews.push(review);
@@ -176,6 +186,7 @@ if (!deliveredOrder) {
   }
 };
 
+/* ================= CAN REVIEW ================= */
 export const canReviewProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -184,7 +195,7 @@ export const canReviewProduct = async (req, res) => {
     const deliveredOrder = await Order.findOne({
       user: userId,
       "items.product": productId,
-      currentStatus: "DELIVERED"
+      currentStatus: "DELIVERED",
     });
 
     res.json({ canReview: !!deliveredOrder });

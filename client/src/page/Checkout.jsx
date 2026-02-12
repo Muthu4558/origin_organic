@@ -67,52 +67,52 @@ const Checkout = () => {
       (sum, item) =>
         sum +
         (item.product.offerPrice ?? item.product.price) *
-        item.quantity,
+          item.quantity,
       0
     );
   }, [cartItems]);
 
-  /* ---------------- GET WEIGHT SAFELY ---------------- */
-  const getWeight = (product) => {
-    return product.weight || product.size || product.variant || "1kg";
-  };
+// Determine if product is half or full for shipping
+const getWeightType = (product) => {
+  // Use packSize if present, else fallback to weight/size
+  const packSize = product.packSize ?? "1"; // "0.5" or "1"
+  const weightStr = product.weight ?? product.size ?? "1";
+
+  // Normalize: check if 0.5 → half, else full
+  if (packSize === "0.5" || packSize === 0 || packSize.toString() === "0.5") return "half";
+
+  return "full";
+};
+
 
   /* ---------------- SHIPPING TOTAL (FROM DB) ---------------- */
-  const shippingTotal = useMemo(() => {
-    if (!selectedAddress || !shippingRules.length) return 0;
+const shippingTotal = useMemo(() => {
+  if (!selectedAddress || !shippingRules.length) return 0;
 
-    const state = selectedAddress.state?.trim();
-    const district = selectedAddress.district?.trim();
+  const state = selectedAddress.state?.trim();
+  const district = selectedAddress.district?.trim();
 
-    return cartItems.reduce((sum, item) => {
-      const weight = getWeight(item.product);
-      const qty = item.quantity;
+  return cartItems.reduce((sum, item) => {
+    const weightType = getWeightType(item.product); // "half" or "full"
+    const qty = item.quantity;
 
-      // try district match
-      let rule = shippingRules.find(
-        (r) =>
-          r.state === state &&
-          r.district &&
-          r.district === district
-      );
+    // District-level shipping
+    let rule = shippingRules.find(
+      (r) => r.state === state && r.district && r.district === district
+    );
 
-      // fallback to state
-      if (!rule) {
-        rule = shippingRules.find(
-          (r) => r.state === state && !r.district
-        );
-      }
+    // Fallback to state-level
+    if (!rule) {
+      rule = shippingRules.find((r) => r.state === state && !r.district);
+    }
 
-      if (!rule) return sum;
+    if (!rule) return sum;
 
-      let charge = 0;
+    const charge = weightType === "half" ? rule.halfKg : rule.oneKg;
+    return sum + charge * qty;
+  }, 0);
+}, [cartItems, selectedAddress, shippingRules]);
 
-      if (weight === "500g" || weight === "0.5kg") charge = rule.halfKg;
-      else charge = rule.oneKg;
-
-      return sum + charge * qty;
-    }, 0);
-  }, [cartItems, selectedAddress, shippingRules]);
 
   const total = productTotal + shippingTotal;
 
@@ -313,10 +313,11 @@ const Checkout = () => {
                 <label
                   key={a._id}
                   onClick={() => setSelectedAddress(a)}
-                  className={`flex gap-3 p-4 border rounded-lg cursor-pointer mb-2 ${selectedAddress?._id === a._id
+                  className={`flex gap-3 p-4 border rounded-lg cursor-pointer mb-2 ${
+                    selectedAddress?._id === a._id
                       ? "bg-green-50 border-[#57b957]"
                       : ""
-                    }`}
+                  }`}
                 >
                   <input
                     type="radio"
