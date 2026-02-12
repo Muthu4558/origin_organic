@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import statesData from "../data/indiaStates.json";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MdDashboard, MdArrowRightAlt, MdDelete } from "react-icons/md";
+import { MdArrowRightAlt, MdDelete } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import Sidebar from "../components/Sidebar";
 
@@ -22,9 +22,9 @@ const ConfirmDeleteModal = ({ open, shippingName, onCancel, onConfirm }) => {
             <motion.div
                 initial={{ scale: 0.96, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="relative bg-white rounded-2xl shadow-xl w-[94%] max-w-md p-6 z-10"
+                className="relative bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 z-10"
             >
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove shipping</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove Shipping</h3>
                 <p className="text-gray-600 mb-6">
                     Are you sure you want to remove{" "}
                     <span className="font-semibold" style={{ color: BRAND }}>
@@ -32,7 +32,7 @@ const ConfirmDeleteModal = ({ open, shippingName, onCancel, onConfirm }) => {
                     </span>{" "}
                     from shipping list?
                 </p>
-                <div className="flex gap-3 justify-end">
+                <div className="flex gap-3 justify-end flex-wrap">
                     <button
                         onClick={onCancel}
                         className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition cursor-pointer"
@@ -62,7 +62,6 @@ const AdminShipping = () => {
     const [list, setList] = useState([]);
     const [search, setSearch] = useState("");
 
-    // Delete confirmation state
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmId, setConfirmId] = useState(null);
     const [confirmName, setConfirmName] = useState("");
@@ -73,7 +72,7 @@ const AdminShipping = () => {
             const res = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/shipping`);
             setList(res.data);
         } catch {
-            toast.error("Failed to load");
+            toast.error("Failed to load shipping data");
         }
     };
 
@@ -85,7 +84,7 @@ const AdminShipping = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!stateName || !halfKg || !oneKg) {
-            toast.error("Fill all required fields");
+            toast.error("Please fill all required fields");
             return;
         }
 
@@ -96,7 +95,7 @@ const AdminShipping = () => {
                 halfKg,
                 oneKg,
             });
-            toast.success("Saved successfully");
+            toast.success("Shipping saved successfully");
             setStateName("");
             setDistrict("");
             setHalfKg("");
@@ -107,7 +106,7 @@ const AdminShipping = () => {
         }
     };
 
-    // Delete confirmation handlers
+    // Delete confirmation
     const askDelete = (id, name) => {
         setConfirmId(id);
         setConfirmName(name);
@@ -135,20 +134,19 @@ const AdminShipping = () => {
     };
 
     const handleLogout = async () => {
-    try {
-      await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
-      localStorage.removeItem("token");
-      toast.success("Logged out");
-      window.location.href = "/login";
-    } catch (err) {
-      toast.error("Logout failed");
-    }
-  };
+        try {
+            await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
+            localStorage.removeItem("token");
+            toast.success("Logged out");
+            window.location.href = "/login";
+        } catch {
+            toast.error("Logout failed");
+        }
+    };
 
     const states = Object.keys(statesData);
     const districts = stateName ? statesData[stateName] : [];
 
-    // Filter shipping list
     const filteredList = list.filter(
         (item) =>
             item.state.toLowerCase().includes(search.toLowerCase()) ||
@@ -156,12 +154,12 @@ const AdminShipping = () => {
     );
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
             {/* Sidebar */}
-            <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout}/>
+            <Sidebar activePage={activePage} setActivePage={setActivePage} handleLogout={handleLogout} />
 
             {/* Main content */}
-            <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8">
+            <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-auto">
                 <ConfirmDeleteModal
                     open={confirmOpen}
                     shippingName={confirmName}
@@ -178,7 +176,7 @@ const AdminShipping = () => {
 
                 {/* BREADCRUMB */}
                 <div className="mb-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-sm flex-wrap">
                         <Link
                             to="/admin"
                             className="text-sm font-medium text-gray-600 hover:text-[#57b957] transition"
@@ -196,7 +194,10 @@ const AdminShipping = () => {
                 </div>
 
                 {/* ADD SHIPPING FORM */}
-                <form onSubmit={handleSubmit} className="grid md:grid-cols-4 gap-3 mb-6">
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6"
+                >
                     <select
                         value={stateName}
                         onChange={(e) => {
@@ -204,22 +205,26 @@ const AdminShipping = () => {
                             setDistrict("");
                         }}
                         required
-                        className="border px-3 py-2 rounded"
+                        className="border px-3 py-2 rounded w-full"
                     >
-                        <option value="">State</option>
+                        <option value="">Select State</option>
                         {states.map((s) => (
-                            <option key={s}>{s}</option>
+                            <option key={s} value={s}>
+                                {s}
+                            </option>
                         ))}
                     </select>
 
                     {/* <select
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
-                        className="border px-3 py-2 rounded"
+                        className="border px-3 py-2 rounded w-full"
                     >
-                        <option value="">District (optional)</option>
+                        <option value="">Select District (optional)</option>
                         {districts.map((d) => (
-                            <option key={d}>{d}</option>
+                            <option key={d} value={d}>
+                                {d}
+                            </option>
                         ))}
                     </select> */}
 
@@ -229,7 +234,7 @@ const AdminShipping = () => {
                         value={halfKg}
                         onChange={(e) => setHalfKg(e.target.value)}
                         required
-                        className="border px-3 py-2 rounded"
+                        className="border px-3 py-2 rounded w-full"
                     />
 
                     <input
@@ -238,11 +243,12 @@ const AdminShipping = () => {
                         value={oneKg}
                         onChange={(e) => setOneKg(e.target.value)}
                         required
-                        className="border px-3 py-2 rounded"
+                        className="border px-3 py-2 rounded w-full"
                     />
 
                     <button
-                        className="bg-green-600 text-white rounded px-4 py-2 hover:bg-green-700 transition cursor-pointer"
+                        type="submit"
+                        className="bg-green-600 text-white rounded px-4 py-2 hover:bg-green-700 transition w-full md:w-auto"
                     >
                         Save
                     </button>
@@ -267,19 +273,19 @@ const AdminShipping = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-green-100">
                             <tr>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
                                     State
                                 </th>
-                                {/* <th className="px-6 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
+                                {/* <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
                                     District
                                 </th> */}
-                                <th className="px-6 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
+                                <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
                                     500g Price (₹)
                                 </th>
-                                <th className="px-6 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
+                                <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
                                     1kg Price (₹)
                                 </th>
-                                <th className="px-6 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
+                                <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -290,19 +296,19 @@ const AdminShipping = () => {
                                     key={item._id}
                                     className={idx % 2 === 0 ? "bg-gray-50 hover:bg-gray-100" : "hover:bg-gray-100"}
                                 >
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
                                         {item.state}
                                     </td>
-                                    {/* <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-700">
+                                    {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
                                         {item.district || "-"}
                                     </td> */}
-                                    <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-700">
+                                    <td className="px-4 py-3 text-center whitespace-nowrap text-sm text-gray-700">
                                         ₹{item.halfKg}
                                     </td>
-                                    <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-700">
+                                    <td className="px-4 py-3 text-center whitespace-nowrap text-sm text-gray-700">
                                         ₹{item.oneKg}
                                     </td>
-                                    <td className="px-6 py-4 text-center whitespace-nowrap text-sm">
+                                    <td className="px-4 py-3 text-center whitespace-nowrap text-sm">
                                         <button
                                             onClick={() =>
                                                 askDelete(
@@ -312,14 +318,14 @@ const AdminShipping = () => {
                                             }
                                             className="text-red-600 hover:text-red-800 font-medium cursor-pointer"
                                         >
-                                            <MdDelete />
+                                            <MdDelete size={20} />
                                         </button>
                                     </td>
                                 </tr>
                             ))}
                             {filteredList.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                                    <td colSpan={5} className="px-4 py-3 text-center text-gray-500">
                                         No shipping found
                                     </td>
                                 </tr>

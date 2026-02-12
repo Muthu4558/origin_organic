@@ -10,42 +10,42 @@ const BRAND = "#57b957";
 const testimonials = [
   {
     id: 1,
-    nameTamil: "Muthu",
-    location: "Chennai",
+    name: "Arun",
+    location: "Chennai, Tamil Nadu",
     text:
-      "Origin Organic products super-a iruku! Masala fresh-ah, flavour full-ah. Delivery fast-ahum packaging neat-ahum.",
+      "Origin Organic products are excellent! The masalas are fresh and full of flavor. Delivery is fast and the packaging is neat.",
     rating: 5,
   },
   {
     id: 2,
-    nameTamil: "Shanthi",
-    location: "Coimbatore",
+    name: "Priya",
+    location: "Bengaluru, Karnataka",
     text:
-      "Nuts and dry fruits quality romba nalla. Almonds crunchy, price-value match pannuthu. Repeat purchase panniren.",
+      "The quality of nuts and dry fruits is top-notch. Almonds are crunchy, and the price matches the value. I will definitely buy again.",
     rating: 5,
   },
   {
     id: 3,
-    nameTamil: "Kumar",
-    location: "Madurai",
+    name: "Rahul",
+    location: "Mumbai, Maharashtra",
     text:
-      "Ghee taste-u traditional madhiri thaan. Home-cooked flavor varuthu. Family ellarukum pidichiruchu.",
+      "The ghee tastes just like homemade. Traditional flavor that my whole family loved. Love the authenticity and the quick delivery service.",
     rating: 5,
   },
   {
     id: 4,
-    nameTamil: "Ravi",
-    location: "Salem",
+    name: "Ananya",
+    location: "Kolkata, West Bengal",
     text:
-      "Oils pure-a feel aagudhu — cooking-la flavour retain aagudhu. Packaging leak-free. Service nice.",
+      "The oils feel pure and retain their flavor while cooking. Packaging is leak-free and the service is great.",
     rating: 4,
   },
   {
     id: 5,
-    nameTamil: "Sathya",
-    location: "Tirunelveli",
+    name: "Ravi",
+    location: "Hyderabad, Telangana",
     text:
-      "Masala blends aroma super! Idly satham-um different feel aayiduchu. Shop-ah recommend panren.",
+      "The aroma of the masala blends is amazing! Even the idli rice tastes different and flavorful. Highly recommended!",
     rating: 5,
   },
 ];
@@ -114,11 +114,11 @@ const Testimonials = () => {
                       background: "linear-gradient(135deg,#57b957 0%,#3e772f 100%)",
                     }}
                   >
-                    {t.nameTamil.charAt(0)}
+                    {t.name.charAt(0)}
                   </div>
 
                   <div>
-                    <div className="font-semibold text-gray-900">{t.nameTamil}</div>
+                    <div className="font-semibold text-gray-900">{t.name}</div>
                     <div className="text-xs text-gray-500">{t.location}</div>
                   </div>
 

@@ -27,7 +27,7 @@ const Sidebar = ({ activePage, setActivePage, handleLogout }) => {
         <>
             {/* Mobile toggle button */}
             <button
-                className="fixed top-4 left-4 z-50 md:hidden p-2 bg-white rounded-md shadow-md"
+                className="fixed top-4 right-4 z-50 md:hidden p-2 bg-white rounded-md shadow-md"
                 onClick={() => setMobileOpen(!mobileOpen)}
             >
                 {mobileOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
