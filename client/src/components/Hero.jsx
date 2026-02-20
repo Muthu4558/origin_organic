@@ -12,12 +12,12 @@ import "swiper/css";
 import "swiper/css/pagination";
 
 // Images
-import heroImg1 from "../assets/hero.png";
-import heroImg2 from "../assets/hero.png";
-import heroImg3 from "../assets/hero.png";
+// import heroImg1 from "../assets/h1.jpg";
+import heroImg2 from "../assets/h3.jpg";
+import heroImg3 from "../assets/h2.jpg";
 
 const slides = [
-  { image: heroImg1, discount: "30% OFF" },
+  // { image: heroImg1, discount: "30% OFF" },
   { image: heroImg2, discount: "25% OFF" },
   { image: heroImg3, discount: "40% OFF" },
 ];

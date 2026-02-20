@@ -33,7 +33,6 @@ const Checkout = () => {
   const [editAddressForm, setEditAddressForm] = useState(emptyAddress);
 
   const [shippingRules, setShippingRules] = useState([]);
-
   const [loading, setLoading] = useState(false);
 
   /* ---------------- INIT ---------------- */
@@ -47,71 +46,110 @@ const Checkout = () => {
       .then((res) => {
         setProfile(res.data);
         setAddresses(res.data.addresses || []);
-
         if (res.data.addresses?.length) {
           setSelectedAddress(res.data.addresses[0]);
         }
       })
       .catch(() => navigate("/login"));
 
-    // 🔥 fetch shipping rules
     axios
       .get(`${import.meta.env.VITE_APP_BASE_URL}/api/shipping`)
       .then((res) => setShippingRules(res.data))
       .catch(() => toast.error("Shipping load failed"));
   }, []);
 
-  /* ---------------- PRODUCT TOTAL ---------------- */
-  const productTotal = useMemo(() => {
-    return cartItems.reduce(
-      (sum, item) =>
-        sum +
-        (item.product.offerPrice ?? item.product.price) *
-          item.quantity,
-      0
-    );
+  /* ---------------- REMOVE NULL PRODUCTS SAFELY ---------------- */
+  const validCartItems = useMemo(() => {
+    return cartItems.filter((item) => item?.product);
   }, [cartItems]);
 
-// Determine if product is half or full for shipping
-const getWeightType = (product) => {
-  // Use packSize if present, else fallback to weight/size
-  const packSize = product.packSize ?? "1"; // "0.5" or "1"
-  const weightStr = product.weight ?? product.size ?? "1";
+  /* ---------------- PRODUCT TOTAL ---------------- */
+  const productTotal = useMemo(() => {
+    return validCartItems.reduce((sum, item) => {
+      const price =
+        item.product.offerPrice ?? item.product.price ?? 0;
+      return sum + price * (item.quantity || 1);
+    }, 0);
+  }, [validCartItems]);
 
-  // Normalize: check if 0.5 → half, else full
-  if (packSize === "0.5" || packSize === 0 || packSize.toString() === "0.5") return "half";
+  /* ---------------- SHIPPING TOTAL ---------------- */
+  const shippingTotal = useMemo(() => {
+    if (!selectedAddress || !shippingRules.length) return 0;
 
-  return "full";
-};
+    const state = selectedAddress.state?.trim().toLowerCase();
+    const district = selectedAddress.district?.trim().toLowerCase();
 
+    return validCartItems.reduce((sum, item) => {
+      if (!item?.product) return sum;
 
-  /* ---------------- SHIPPING TOTAL (FROM DB) ---------------- */
-const shippingTotal = useMemo(() => {
-  if (!selectedAddress || !shippingRules.length) return 0;
+      let { packSize, unit } = item.product;
+      const qty = item.quantity || 1;
 
-  const state = selectedAddress.state?.trim();
-  const district = selectedAddress.district?.trim();
+      if (!packSize || !unit) return sum;
 
-  return cartItems.reduce((sum, item) => {
-    const weightType = getWeightType(item.product); // "half" or "full"
-    const qty = item.quantity;
+      packSize = Number(packSize);
 
-    // District-level shipping
-    let rule = shippingRules.find(
-      (r) => r.state === state && r.district && r.district === district
-    );
+      // 🔥 STEP 1: Convert everything to grams
+      let weightInGrams = 0;
 
-    // Fallback to state-level
-    if (!rule) {
-      rule = shippingRules.find((r) => r.state === state && !r.district);
-    }
+      if (unit === "g") {
+        weightInGrams = packSize;
+      }
+      else if (unit === "kg") {
+        weightInGrams = packSize * 1000;
+      }
+      else if (unit === "ml") {
+        weightInGrams = packSize;        // 500ml = 500g
+      }
+      else if (unit === "litre") {
+        weightInGrams = packSize * 1000; // 1L = 1000g
+      }
 
-    if (!rule) return sum;
+      // 🔥 STEP 2: Convert grams to shipping key
+      let sizeKey = "";
 
-    const charge = weightType === "half" ? rule.halfKg : rule.oneKg;
-    return sum + charge * qty;
-  }, 0);
-}, [cartItems, selectedAddress, shippingRules]);
+      if (weightInGrams === 200) {
+        sizeKey = "200g";
+      }
+      else if (weightInGrams === 500) {
+        sizeKey = "500g";
+      }
+      else if (weightInGrams === 1000) {
+        sizeKey = "1kg";
+      }
+      else {
+        // fallback for unsupported weights
+        return sum;
+      }
+
+      // 🔥 STEP 3: Find shipping rule
+      let rule =
+        shippingRules.find(
+          (r) =>
+            r.state?.toLowerCase() === state &&
+            r.district &&
+            r.district.toLowerCase() === district
+        ) ||
+        shippingRules.find(
+          (r) =>
+            r.state?.toLowerCase() === state &&
+            (!r.district || r.district === "")
+        );
+
+      if (!rule || !rule.shippingRates) return sum;
+
+      // 🔥 STEP 4: Read rate
+      let charge =
+        typeof rule.shippingRates.get === "function"
+          ? rule.shippingRates.get(sizeKey)
+          : rule.shippingRates[sizeKey];
+
+      if (!charge) return sum;
+
+      return sum + Number(charge) * qty;
+    }, 0);
+  }, [validCartItems, selectedAddress, shippingRules]);
+
 
 
   const total = productTotal + shippingTotal;
@@ -166,7 +204,7 @@ const shippingTotal = useMemo(() => {
   /* ---------------- PAYMENT ---------------- */
   const placeOrder = async () => {
     if (!selectedAddress) return toast.error("Select address");
-    if (!cartItems.length) return toast.error("Cart empty");
+    if (!validCartItems.length) return toast.error("Cart empty");
 
     try {
       setLoading(true);
@@ -282,8 +320,10 @@ const shippingTotal = useMemo(() => {
 
       <div className="min-h-screen pt-28 pb-12 px-3 sm:px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT */}
+
+          {/* LEFT SIDE */}
           <div className="lg:col-span-2 space-y-6">
+
             {profile && (
               <div className="bg-white rounded-xl shadow p-4 border border-[#57b957]">
                 <h2 className="font-semibold mb-2">Customer Details</h2>
@@ -293,7 +333,7 @@ const shippingTotal = useMemo(() => {
               </div>
             )}
 
-            {/* ADDRESS */}
+            {/* ADDRESS SECTION */}
             <div className="bg-white rounded-xl shadow p-4 border border-[#57b957]">
               <div className="flex justify-between mb-4">
                 <h2 className="font-semibold">Delivery Address</h2>
@@ -313,11 +353,10 @@ const shippingTotal = useMemo(() => {
                 <label
                   key={a._id}
                   onClick={() => setSelectedAddress(a)}
-                  className={`flex gap-3 p-4 border rounded-lg cursor-pointer mb-2 ${
-                    selectedAddress?._id === a._id
+                  className={`flex gap-3 p-4 border rounded-lg cursor-pointer mb-2 ${selectedAddress?._id === a._id
                       ? "bg-green-50 border-[#57b957]"
                       : ""
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -325,8 +364,7 @@ const shippingTotal = useMemo(() => {
                     readOnly
                   />
                   <div className="flex-1 text-sm">
-                    {a.street}, {a.city}, {a.district}, {a.state} –{" "}
-                    {a.pincode}
+                    {a.street}, {a.city}, {a.district}, {a.state} – {a.pincode}
                   </div>
 
                   <FaEdit
@@ -352,25 +390,26 @@ const shippingTotal = useMemo(() => {
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* RIGHT SIDE */}
           <div className="bg-white rounded-xl shadow p-4 border border-[#57b957] h-fit">
             <h2 className="font-semibold mb-4">Order Summary</h2>
 
-            {cartItems.map((item) => (
-              <div
-                key={item.product._id}
-                className="flex justify-between text-sm mb-1"
-              >
-                <span>
-                  {item.product.name} × {item.quantity}
-                </span>
-                <span>
-                  ₹
-                  {(item.product.offerPrice ?? item.product.price) *
-                    item.quantity}
-                </span>
-              </div>
-            ))}
+            {validCartItems.map((item) => {
+              const price =
+                item.product.offerPrice ?? item.product.price ?? 0;
+
+              return (
+                <div
+                  key={item.product._id}
+                  className="flex justify-between text-sm mb-1"
+                >
+                  <span>
+                    {item.product.name} × {item.quantity}
+                  </span>
+                  <span>₹{price * item.quantity}</span>
+                </div>
+              );
+            })}
 
             <div className="flex justify-between text-sm mt-3">
               <span>Shipping</span>
@@ -395,6 +434,7 @@ const shippingTotal = useMemo(() => {
               {loading ? "Redirecting..." : "Pay & Place Order"}
             </button>
           </div>
+
         </div>
       </div>
 

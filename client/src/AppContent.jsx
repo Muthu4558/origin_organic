@@ -27,6 +27,10 @@ import Shipping from "./components/Shipping";
 import Terms from "./components/Terms";
 import VerifyEmail from "./page/VerifyEmail";
 import AdminShipping from "./page/AdminShipping";
+import AppleCIder from "./page/AppleCIder";
+import Pickle from "./page/Pickle";
+import Seeds from "./page/Seeds";
+import AdminDashboard from "./page/AdminDashboard";
 
 const AppContent = () => {
     const { loading } = useLoading();
@@ -55,12 +59,16 @@ const AppContent = () => {
                 <Route path="/products/nuts" element={<Nuts />} />
                 <Route path="/products/oils" element={<Oils />} />
                 <Route path="/products/diabetics-mix" element={<DiabeticsMix />} />
+                <Route path="/products/apple-cider" element={<AppleCIder />} />
+                <Route path="/products/pickle" element={<Pickle />} />
+                <Route path="/products/seeds" element={<Seeds />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order/:id" element={<OrderDetails />} />
                 <Route path="/thankyou" element={<ThankYou />} />
                 {/* admin */}
-                <Route path="/admin" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />
+                <Route path="/admin/dashboard" element={<PrivateRoute adminOnly={true}><AdminDashboard /></PrivateRoute>} />
+                <Route path="/admin/product" element={<PrivateRoute adminOnly={true}><Admin /></PrivateRoute>} />
                 <Route path="/admin/shipping" element={<PrivateRoute adminOnly={true}><AdminShipping /></PrivateRoute>} />
                 <Route path="/admin/orders" element={<PrivateRoute adminOnly={true}><AdminOrders /></PrivateRoute>} />
             </Routes>

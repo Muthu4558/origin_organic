@@ -130,14 +130,18 @@ const Navbar = () => {
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    className="absolute left-0 mt-2 w-44 bg-white rounded-xl shadow-lg border overflow-hidden z-30"
+                    className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border overflow-hidden z-30"
                   >
                     {[["All Products", "/products/all-products"],
-                    ["Masala Items", "/products/masala"],
+                    // ["Masala Items", "/products/masala"],
                     ["Milk Products", "/products/milk"],
                     ["Nuts", "/products/nuts"],
                     ["Oils", "/products/oils"],
-                    ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
+                    ["Diabetics Mix", "/products/diabetics-mix"],
+                    ["Apple Cider Vinegar", "/products/apple-cider"],
+                    ["Pickle", "/products/pickle"],
+                    ["Seeds", "/products/seeds"]
+                    ].map(([label, path]) => (
                       <li key={path}>
                         <Link
                           to={path}
@@ -254,7 +258,11 @@ const Navbar = () => {
                         ["Milk Products", "/products/milk"],
                         ["Nuts", "/products/nuts"],
                         ["Oils", "/products/oils"],
-                        ["Diabetics Mix", "/products/diabetics-mix"]].map(([label, path]) => (
+                        ["Diabetics Mix", "/products/diabetics-mix"]
+                        ["Apple Cider Vinegar", "/products/apple-cider"],
+                        ["Pickle", "/products/pickle"],
+                        ["Seeds", "/products/seeds"]
+                        ].map(([label, path]) => (
                           <li key={path}>
                             <Link
                               to={path}

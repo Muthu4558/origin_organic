@@ -35,7 +35,7 @@ const DiabeticsMix = () => {
   useEffect(() => {
     startLoading();
     axios
-      .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Diabetics Mix`)
+      .get(`${import.meta.env.VITE_APP_BASE_URL}/api/products/Apple Cider Vinegar`)
       .then((res) => {
         setProducts(res.data || []);
         setFilteredProducts(res.data || []);
@@ -109,11 +109,11 @@ const DiabeticsMix = () => {
             {/* LEFT */}
             <div className="w-full lg:w-2/3 text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-gray-900">
-                Explore <span style={{ color: BRAND }}>Diabetics Mix</span>
+                Explore <span style={{ color: BRAND }}>Apple Cider Vinegar</span>
               </h1>
 
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto lg:mx-0">
-                Discover our curated selection of Diabetics Mix products, specially
+                Discover our curated selection of Apple Cider Vinegar products, specially
                 crafted to support your health and wellness journey. Enjoy natural,
                 wholesome ingredients designed to help manage blood sugar levels
                 effectively.
@@ -126,9 +126,9 @@ const DiabeticsMix = () => {
                   <input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search Diabetics Mix, types or brands..."
+                    placeholder="Search Apple cider vinegar, types or brands..."
                     className="outline-none text-sm placeholder-gray-400 bg-transparent w-full sm:w-72"
-                    aria-label="Search Diabetics Mix products"
+                    aria-label="Search Apple cider vinegar products"
                   />
                 </div>
 
@@ -191,7 +191,7 @@ const DiabeticsMix = () => {
                 <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search Diabetics Mix..."
+                  placeholder="Search Apple cider vinegar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-[#cfe3d0] focus:outline-none"
@@ -324,7 +324,7 @@ const DiabeticsMix = () => {
                 <div className="text-4xl" style={{ color: BRAND }}>😕</div>
                 <h3 className="text-2xl font-semibold">No products found</h3>
                 <p className="text-gray-600 max-w-xl mx-auto">
-                  No Diabetics Mix products match your filters. Try adjusting filters or browse other categories.
+                  No Apple Cider Vinegar products match your filters. Try adjusting filters or browse other categories.
                 </p>
                 <button
                   onClick={clearFilters}

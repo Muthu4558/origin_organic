@@ -12,30 +12,44 @@ import { toast } from "react-toastify";
 
 const BRAND = "#57b957";
 
-const resolveUnit = (product) => {
-  if (product?.unit) return product.unit;
-  if (["Masala Items", "Nuts", "Diabetics Mix"].includes(product?.category)) {
-    return "kg";
-  }
-  return "litre";
+// const resolveUnit = (product) => {
+//   if (product?.unit) return product.unit;
+//   if (["Masala Items", "Nuts", "Diabetics Mix"].includes(product?.category)) {
+//     return "kg";
+//   }
+//   return "litre";
+// };
+
+// const formatPackSize = (product) => {
+//   const unit = resolveUnit(product);
+//   const size = product?.packSize;
+
+//   if (!size) return unit;
+
+//   if (unit === "kg") {
+//     return size === "0.5" ? "500 g" : "1 kg";
+//   }
+
+//   if (unit === "litre") {
+//     return size === "0.5" ? "500 ml" : "1 l";
+//   }
+
+//   return unit;
+// };
+
+const formatSize = (packSize, unit) => {
+  if (!packSize || !unit) return "";
+
+  const size = Number(packSize);
+
+  if (unit === "g") return `${size} g`;
+  if (unit === "kg") return `${size} kg`;
+  if (unit === "ml") return `${size} ml`;
+  if (unit === "litre") return `${size} L`;
+
+  return `${size} ${unit}`;
 };
 
-const formatPackSize = (product) => {
-  const unit = resolveUnit(product);
-  const size = product?.packSize;
-
-  if (!size) return unit; // fallback for old data
-
-  if (unit === "kg") {
-    return size === "0.5" ? "500 g" : "1 kg";
-  }
-
-  if (unit === "litre") {
-    return size === "0.5" ? "500 ml" : "1 l";
-  }
-
-  return unit;
-};
 
 const Skeleton = () => (
   <div className="animate-pulse">
@@ -332,8 +346,9 @@ const ProductDetail = () => {
   const offerPrice = product.offerPrice ? Number(product.offerPrice) : null;
   const discountPercent = offerPrice ? Math.round(((price - offerPrice) / price) * 100) : 0;
   const rating = Math.max(0, Math.min(5, Number(product.rating ?? 4.3)));
-  const unit = resolveUnit(product);
-  const displaySize = formatPackSize(product);
+  // const unit = resolveUnit(product);
+  // const displaySize = formatPackSize(product);
+  const displaySize = formatSize(product.packSize, product.unit);
 
   return (
     <>

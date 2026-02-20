@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdDashboard, MdMenu, MdClose } from "react-icons/md";
-import { FaShippingFast, FaFirstOrder, FaSignOutAlt } from "react-icons/fa";
+import { MdDashboard, MdMenu, MdClose, MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { FaShippingFast, FaFirstOrder, FaSignOutAlt, FaShopify } from "react-icons/fa";
 import Logo from "../assets/logo.png";
 
 const BRAND = "#57b957";
@@ -11,7 +11,8 @@ const Sidebar = ({ activePage, setActivePage, handleLogout }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const menuItems = [
-        { label: "Home", icon: <MdDashboard />, page: "home", path: "/admin" },
+        { label: "Dashboard", icon: <MdDashboard />, page: "dashboard", path: "/admin/dashboard" },
+        { label: "Products", icon: <MdOutlineProductionQuantityLimits />, page: "home", path: "/admin/product" },
         { label: "Shipping Amount", icon: <FaShippingFast />, page: "shipping", path: "/admin/shipping" },
         { label: "Customer Orders", icon: <FaFirstOrder />, page: "orders", path: "/admin/orders" },
         // Add more pages here

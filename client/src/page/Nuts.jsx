@@ -150,13 +150,13 @@ const Nuts = () => {
 
             {/* HERO IMAGE */}
             <div className="lg:w-1/3 flex justify-center lg:justify-end">
-              <div className="w-48 h-40 sm:w-56 sm:h-44 rounded-2xl bg-gradient-to-tr from-[#eef7ee] to-white border border-gray-100 shadow-md flex items-center justify-center">
+              {/* <div className="w-48 h-40 sm:w-56 sm:h-44 rounded-2xl bg-gradient-to-tr from-[#eef7ee] to-white border border-gray-100 shadow-md flex items-center justify-center">
                 <img
                   src="/assets/nuts.svg"
                   alt="nuts and dry fruits"
                   className="w-32 sm:w-40 object-contain"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

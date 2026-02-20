@@ -147,14 +147,14 @@ const Oils = () => {
 
             {/* RIGHT IMAGE */}
             <div className="lg:w-1/3 flex justify-center lg:justify-end">
-              <div className="w-56 h-44 rounded-2xl bg-gradient-to-tr from-[#eef7ee] to-white border border-gray-100 shadow-md flex items-center justify-center">
+              {/* <div className="w-56 h-44 rounded-2xl bg-gradient-to-tr from-[#eef7ee] to-white border border-gray-100 shadow-md flex items-center justify-center">
                 <img
                   src="/assets/oil.svg"
                   alt="oil products"
                   className="w-40 h-32 object-contain"
                   draggable={false}
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

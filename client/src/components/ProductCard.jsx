@@ -107,7 +107,7 @@ const ProductCard = ({ product }) => {
 
         {/* CONTENT OVER IMAGE */}
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-          
+
           {/* NAME */}
           <h3 className="text-xl font-bold leading-tight truncate">
             {product?.name}
@@ -134,7 +134,7 @@ const ProductCard = ({ product }) => {
               <div className="text-2xl font-extrabold">
                 ₹{price}
                 <span className="text-sm font-medium text-[#57b957]">
-                  {" "} / {displaySize}
+                  / {product.packSize} {product.unit}
                 </span>
               </div>
             </div>
@@ -144,10 +144,9 @@ const ProductCard = ({ product }) => {
               disabled={isOutOfStock}
               whileTap={{ scale: 0.92 }}
               className={`relative flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold
-                ${
-                  isOutOfStock
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-[#57b957] text-white cursor-pointer hover:bg-green-600 transition"
+                ${isOutOfStock
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-[#57b957] text-white cursor-pointer hover:bg-green-600 transition"
                 }`}
             >
               <FaShoppingCart />

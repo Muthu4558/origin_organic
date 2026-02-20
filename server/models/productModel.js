@@ -6,22 +6,21 @@ const productSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ["Masala Items", "Milk Products", "Nuts", "Oils", "Diabetics Mix"],
+      enum: ["Masala Items", "Milk Products", "Nuts", "Oils", "Diabetics Mix", "Apple Cider Vinegar", "Pickle", "Seeds"],
       required: true,
     },
 
     unit: {
       type: String,
-      enum: ["kg", "litre"],
+      enum: ["g", "kg", "ml", "litre"],
       required: true,
     },
 
-    // ✅ NEW FIELD
     packSize: {
-      type: String,
-      enum: ["0.5", "1"],
+      type: Number, // store actual number like 2, 100, 200, 500, 1
       required: true,
     },
+
 
     price: { type: Number, required: true },
     offerPrice: { type: Number },

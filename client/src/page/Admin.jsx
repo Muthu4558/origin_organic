@@ -23,7 +23,7 @@ const BRAND = "#57b957";
 
 const Admin = () => {
   const { loading, startLoading, stopLoading } = useLoading();
-  const [activePage, setActivePage] = useState("home");
+  const [activePage, setActivePage] = useState("Add-product");
 
   // Product state
   const [formData, setFormData] = useState({
@@ -50,23 +50,23 @@ const Admin = () => {
   const [filterCategory, setFilterCategory] = useState("All");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
-  const categories = ["All", "Masala Items", "Milk Products", "Nuts", "Oils", "Diabetics Mix"];
-  const isKgCategory = ["Masala Items", "Nuts", "Diabetics Mix"].includes(formData.category);
+  const categories = ["All", "Masala Items", "Milk Products", "Nuts", "Oils", "Diabetics Mix", "Apple Cider Vinegar", "Pickle", "Seeds"];
+  // const isKgCategory = ["Masala Items", "Nuts", "Diabetics Mix"].includes(formData.category);
 
   /* 🔥 dynamic size text */
-  const getDisplaySize = () => {
-    if (!formData.packSize) {
-      return isKgCategory ? "kg" : "litre";
-    }
+  // const getDisplaySize = () => {
+  //   if (!formData.packSize) {
+  //     return isKgCategory ? "kg" : "litre";
+  //   }
 
-    if (isKgCategory) {
-      return formData.packSize === "0.5" ? "500 g" : "1 kg";
-    }
+  //   if (isKgCategory) {
+  //     return formData.packSize === "0.5" ? "500 g" : "1 kg";
+  //   }
 
-    return formData.packSize === "0.5" ? "500 ml" : "1 l";
-  };
+  //   return formData.packSize === "0.5" ? "500 ml" : "1 l";
+  // };
 
-  const displaySize = getDisplaySize();
+  // const displaySize = getDisplaySize();
 
   useEffect(() => {
     startLoading();
@@ -217,7 +217,7 @@ const Admin = () => {
       <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h1 className="text-3xl font-bold text-gray-900">Home</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
           {activePage === "home" && (
             <button
               onClick={() => setShowModal(true)}
@@ -352,9 +352,12 @@ const Admin = () => {
                     className="w-full px-4 py-3 border rounded-xl"
                   >
                     <option value="">Select Unit</option>
-                    <option value="kg">Kg</option>
-                    <option value="litre">Litre</option>
+                    <option value="g">Gram (g)</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="ml">Millilitre (ml)</option>
+                    <option value="litre">Litre (L)</option>
                   </select>
+
 
                   <select
                     name="packSize"
@@ -364,17 +367,46 @@ const Admin = () => {
                     className="w-full px-4 py-3 border rounded-xl"
                   >
                     <option value="">Select Size</option>
-                    <option value="0.5">
-                      {isKgCategory ? "500 g" : "500 ml"}
-                    </option>
-                    <option value="1">
-                      {isKgCategory ? "1 kg" : "1 l"}
-                    </option>
 
+                    {/* Gram options */}
+                    {(formData.unit === "g") && (
+                      <>
+                        <option value="2">2 g</option>
+                        <option value="100">100 g</option>
+                        <option value="200">200 g</option>
+                        <option value="500">500 g</option>
+                      </>
+                    )}
+
+                    {/* Kg options */}
+                    {(formData.unit === "kg") && (
+                      <>
+                        <option value="1">1 kg</option>
+                        <option value="2">2 kg</option>
+                      </>
+                    )}
+
+                    {/* ML options */}
+                    {(formData.unit === "ml") && (
+                      <>
+                        <option value="200">200 ml</option>
+                        <option value="500">500 ml</option>
+                      </>
+                    )}
+
+                    {/* Litre options */}
+                    {(formData.unit === "litre") && (
+                      <>
+                        <option value="1">1 L</option>
+                        <option value="2">2 L</option>
+                      </>
+                    )}
                   </select>
 
-                  <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder={`Price per ${displaySize} (₹)`} required className="w-full px-4 py-3 border rounded-xl" />
-                  <input name="offerPrice" type="number" value={formData.offerPrice} onChange={handleChange} placeholder={`Offer price per ${displaySize} (₹)`} className="w-full px-4 py-3 border rounded-xl" />
+
+                  <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Price (₹)" required className="w-full px-4 py-3 border rounded-xl" />
+                  <input name="offerPrice" type="number" value={formData.offerPrice} onChange={handleChange} placeholder="Price (₹)"
+                    className="w-full px-4 py-3 border rounded-xl" />
                 </div>
                 <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Short description" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#eaf6ea] min-h-[100px]" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">

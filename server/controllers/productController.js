@@ -28,7 +28,7 @@ export const createProduct = async (req, res) => {
       brand,
       category,
       unit,
-      packSize,
+      packSize: Number(packSize),
       image,
       featured: featured === "true",
     });
@@ -94,7 +94,7 @@ export const updateProduct = async (req, res) => {
       category,
       stock,
       unit,
-      packSize,
+      packSize: Number(packSize),
       description,
       brand,
       featured: featured === "true",

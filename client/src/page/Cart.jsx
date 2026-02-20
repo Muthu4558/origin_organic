@@ -79,19 +79,28 @@ const Cart = () => {
   // Refresh cart when this page mounts or when route changes.
   // This ensures data is fetched after redirect from login.
   useEffect(() => {
-    fetchCart({ showLoader: true });
-    // eslint-disable-next-line
-  }, []);
+  const invalidItems = cartItems.filter(item => !item.product);
+
+  if (invalidItems.length > 0) {
+    invalidItems.forEach(item => {
+      removeFromCart(item.product?._id);
+    });
+  }
+}, [cartItems]);
 
 
-  const total = useMemo(
-    () =>
-      cartItems.reduce(
-        (acc, item) => acc + (item.product.offerPrice || item.product.price) * item.quantity,
-        0
-      ),
-    [cartItems]
-  );
+
+  const total = useMemo(() => {
+  return cartItems.reduce((acc, item) => {
+    if (!item?.product) return acc;
+
+    const price =
+      item.product.offerPrice ?? item.product.price ?? 0;
+
+    return acc + price * (item.quantity || 1);
+  }, 0);
+}, [cartItems]);
+
 
   const askDelete = (productId, productName) => {
     setConfirmProductId(productId);
@@ -162,7 +171,10 @@ const Cart = () => {
               <EmptyState />
             ) : (
               <div className="space-y-5">
-                {cartItems.map((item) => {
+                {cartItems
+  .filter((item) => item?.product)
+  .map((item) => {
+
                   const price = item.product.offerPrice ?? item.product.price;
                   return (
                     <motion.div
