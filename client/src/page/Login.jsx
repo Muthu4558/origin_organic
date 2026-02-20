@@ -55,7 +55,7 @@ const Login = () => {
       if (from) {
         navigate(from, { replace: true });
       } else {
-        navigate(res.data.isAdmin ? "/admin" : "/", { replace: true });
+        navigate(res.data.isAdmin ? "/admin/dashboard" : "/", { replace: true });
       }
     } catch (error) {
       toast.error(
